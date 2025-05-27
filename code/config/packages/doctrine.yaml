@@ -10,10 +10,6 @@ doctrine:
         # Platform options for PostgreSQL
         options:
             charset: utf8
-        # Connection options
-        driver_options:
-            # Enable prepared statements
-            1000: true # not need for postgresql
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true

@@ -5,13 +5,18 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            # async: '%env(MESSENGER_TRANSPORT_DSN)%'
             # failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            sync: 'in-memory://default'
 
         routing:
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            # queries
+            OrderContext\Application\UseCases\GetOrder\Query\GetOrderQuery: sync
+            OrderContext\Application\UseCases\GetOrdersList\Query\GetOrdersListQuery: sync
+            # commands
+            OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatusCommand: sync
+            OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommand: sync
 
 # when@test:
 #    framework:

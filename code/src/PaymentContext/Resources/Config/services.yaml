@@ -6,7 +6,7 @@ services:
         autoconfigure: true
         public: false
 
-    App\PaymentContext\:
+    PaymentContext\:
         resource: '../../'
         exclude:
             - '../../Resources/'

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace Framework;
 
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -12,6 +13,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
+#[OA\Info(version: '1.0.0', title: 'REST API')]
 class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
@@ -79,7 +81,7 @@ class Kernel extends BaseKernel
                 }
             }
 
-            // Load YAML routes if they exist (optional)
+            // Load YAML routes if they exist
             $routesPath = $domainPath.'/Resources/Config/routes.yaml';
             if (file_exists($routesPath)) {
                 $routes->import($routesPath);

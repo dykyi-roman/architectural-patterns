@@ -44,7 +44,8 @@
         "psr-4": {
             "OrderContext\\": "src/OrderContext/",
             "PaymentContext\\": "src/PaymentContext/",
-            "Shared\\": "src/Shared/"
+            "Shared\\": "src/Shared/",
+            "Framework\\": "src/Framework/"
         }
     },
     "autoload-dev": {
@@ -52,6 +53,7 @@
             "OrderContext\\": "src/OrderContext/",
             "PaymentContext\\": "src/PaymentContext/",
             "Shared\\": "src/Shared/",
+            "Framework\\": "src/Framework/"
         }
     },
     "replace": {

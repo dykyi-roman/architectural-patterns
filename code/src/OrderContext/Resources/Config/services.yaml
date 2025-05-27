@@ -6,11 +6,65 @@ services:
         autoconfigure: true
         public: false
 
-    App\OrderContext\:
+    OrderContext\:
         resource: '../../'
         exclude:
             - '../../Resources/'
-            - '../../DomainModel/Model/'
+            - '../../Presentation/Api/{Request, Response}/'
+            - '../../DomainModel/{Entity, Event, Enum, ValueObject}/'
             - '../../Tests/'
             - '../../**/Tests/'
         tags: ['controller.service_arguments']
+
+    # Repositories
+    OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface:
+        class: OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository
+
+    OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository:
+        arguments:
+            $entityManager: '@doctrine.orm.site_entity_manager'
+
+    OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface:
+        class: OrderContext\Infrastructure\Repository\ElasticsearchOrderReadModelRepository
+
+    # Event Store
+    OrderContext\Infrastructure\EventStore\EventStoreInterface:
+        class: OrderContext\Infrastructure\EventStore\PostgreSqlEventStore
+
+    # Outbox
+    OrderContext\Infrastructure\Outbox\OutboxPublisherInterface:
+        class: OrderContext\Infrastructure\Outbox\OutboxPublisher
+
+    # EventHandlers
+    OrderContext\Infrastructure\EventStore\EventHandler\OrderCreatedEventHandler:
+        tags: [ 'order.event_handler' ]
+
+    OrderContext\Infrastructure\EventStore\EventHandler\OrderStatusChangedEventHandler:
+        tags: [ 'order.event_handler' ]
+
+    # Registering command handlers in the message bus
+    OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommandHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'command.bus' }
+
+    OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatusCommandHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'command.bus' }
+
+    # Registering Request Handlers in the Message Bus
+    OrderContext\Application\UseCases\GetOrder\Query\GetOrderQueryHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'query.bus' }
+
+    OrderContext\Application\UseCases\GetOrdersList\Query\GetOrdersListQueryHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'query.bus' }
+
+    # Console commands for working with Outbox
+    OrderContext\Presentation\Console\ProcessOutboxEventsCommand:
+        tags: [ 'console.command' ]
+
+    # Services
+    OrderContext\Application\Service\OrderApplicationService: ~
+
+
