@@ -6,7 +6,7 @@ services:
         autoconfigure: true
         public: false
 
-    App\Shared\:
+    Shared\:
         resource: '../../'
         exclude:
             - '../../Resources/'
@@ -15,10 +15,10 @@ services:
             - '../../**/Tests/'
         tags: ['controller.service_arguments']
 
-    App\Shared\Presentation\Responder\JsonResponder:
+    Shared\Presentation\Responder\JsonResponder:
         tags:
             - { name: kernel.event_subscriber }
 
-    App\Shared\Presentation\Responder\HtmlResponder:
+    Shared\Presentation\Responder\HtmlResponder:
         tags:
             - { name: kernel.event_subscriber }

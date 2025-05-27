@@ -1,0 +1,8 @@
+doctrine:
+  # OrderContext mapping
+#  OrderContext:
+#    is_bundle: false
+#    type: attribute
+#    dir: '%kernel.project_dir%/src/OrderContext/Infrastructure/Persistence/Doctrine/Entity'
+#    prefix: 'App\OrderContext\Infrastructure\Persistence\Doctrine\Entity'
+#    alias: OrderContext

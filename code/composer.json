@@ -42,13 +42,16 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "OrderContext\\": "src/OrderContext/",
+            "PaymentContext\\": "src/PaymentContext/",
+            "Shared\\": "src/Shared/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\": "src/",
-            "App\\Tests\\": "tests/"
+            "OrderContext\\": "src/OrderContext/",
+            "PaymentContext\\": "src/PaymentContext/",
+            "Shared\\": "src/Shared/",
         }
     },
     "replace": {

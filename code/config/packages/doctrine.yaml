@@ -3,6 +3,17 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        # Custom types for UUID and JSON
+        types:
+            uuid: Ramsey\Uuid\Doctrine\UuidType
+            json: Doctrine\DBAL\Types\JsonType
+        # Platform options for PostgreSQL
+        options:
+            charset: utf8
+        # Connection options
+        driver_options:
+            # Enable prepared statements
+            1000: true # not need for postgresql
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
@@ -11,6 +22,11 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
 
+        # Filters
+        filters:
+            soft_delete:
+                class:  Shared\Infrastructure\Persistence\Doctrine\Filter\SoftDeleteFilter
+                enabled: false
 when@test:
     doctrine:
         dbal:
