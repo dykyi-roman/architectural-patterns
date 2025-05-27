@@ -1,0 +1,13 @@
+includes:
+    - ../code/vendor/phpstan/phpstan-symfony/extension.neon
+    - ../code/vendor/phpstan/phpstan-symfony/rules.neon
+
+parameters:
+    level: max
+    paths:
+        - ../code/src
+    excludePaths:
+        - '../code/src/Healthcheck/Presentation/Console/*'
+    ignoreErrors:
+        - message: '#Cannot cast mixed to string#'
+          path: ../code/src/Shared/Presentation/Responder/HtmlResponder.php

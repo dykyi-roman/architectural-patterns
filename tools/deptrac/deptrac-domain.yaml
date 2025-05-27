@@ -1,0 +1,51 @@
+parameters:
+  paths:
+    - ../../code/src
+  exclude_files:
+    - '#.*test.*#'
+    - '#vendor#'
+  layers:
+    - name: OrderContextClasses
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/OrderContext/.*
+          must_not:
+            - type: interface
+              value: .*Interface$
+    - name: PaymentContextClasses
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/.*
+          must_not:
+            - type: interface
+              value: .*Interface$
+    - name: OrderContextInterfaces
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/OrderContext/.*
+            - type: interface
+              value: .*Interface$
+    - name: PaymentContextInterfaces
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/.*
+            - type: interface
+              value: .*Interface$
+
+  ruleset:
+    OrderContextClasses:
+      - OrderContextInterfaces # Can use/implement own domain interfaces
+      - PaymentContextInterfaces  # Can use other domain interfaces
+    PaymentContextClasses:
+      - PaymentContextInterfaces  # Can use/implement own domain interfaces
+      - OrderContextInterfaces # Can use other domain interfaces
+    OrderContextInterfaces: ~
+    PaymentContextInterfaces: ~

@@ -1,0 +1,350 @@
+services:
+    mailhog:
+        image: mailhog/mailhog:latest
+        container_name: es-mailhog
+        profiles: ["mailhog"]
+        ports:
+            - "${MAILHOG_SMTP_PORT}:1025"
+            - "${MAILHOG_UI_PORT}:8025"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "1025"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    papercut:
+        image: jijiechen/papercut:latest
+        container_name: es-papercut
+        profiles: ["papercut"]
+        ports:
+            - "${PAPERCUT_SMTP_PORT}:25"
+            - "${PAPERCUT_UI_PORT}:37408"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:37408"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    swagger-ui:
+        image: swaggerapi/swagger-ui
+        container_name: es-swagger-ui
+        profiles: ["swagger"]
+        environment:
+            - SWAGGER_JSON=/api/openapi.yaml
+            - BASE_URL=/
+        volumes:
+            - ../code/docs/api:/api
+        ports:
+            - "${SWAGGER_UI_PORT:-8080}:8080"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+
+    grafana:
+        image: grafana/grafana:${GRAFANA_VERSION:-latest}
+        container_name: es-grafana
+        profiles: ["grafana"]
+        ports:
+            - "${GRAFANA_PORT:-3000}:3000"
+        volumes:
+            - grafana-data:/var/lib/grafana
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        networks:
+            - es-network
+        depends_on:
+            - prometheus
+        healthcheck:
+            test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    prometheus:
+        image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
+        container_name: es-prometheus
+        profiles: ["grafana"]
+        ports:
+            - "${PROMETHEUS_PORT:-9090}:9090"
+        volumes:
+            - ./containers/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+            - prometheus-data:/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    pushgateway:
+        image: prom/pushgateway:${PUSHGATEWAY_VERSION:-latest}
+        container_name: es-pushgateway
+        profiles: ["grafana"]
+        ports:
+            - "${PUSHGATEWAY_PORT:-9091}:9091"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "wget", "-q", "--spider", "http://localhost:9091/-/healthy"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    zabbix-postgres:
+        image: postgres:${ZABBIX_POSTGRES_VERSION}
+        container_name: es-zabbix-postgres
+        profiles: ["zabbix"]
+        environment:
+            POSTGRES_DB: ${ZABBIX_POSTGRES_DB}
+            POSTGRES_USER: ${ZABBIX_POSTGRES_USER}
+            POSTGRES_PASSWORD: ${ZABBIX_POSTGRES_PASSWORD}
+        volumes:
+            - zabbix-postgres-data:/var/lib/postgresql/data
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${ZABBIX_POSTGRES_USER} -d ${ZABBIX_POSTGRES_DB}"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    zabbix-server:
+        image: zabbix/zabbix-server-pgsql:${ZABBIX_VERSION}
+        container_name: es-zabbix-server
+        profiles: ["zabbix"]
+        ports:
+            - "${ZABBIX_SERVER_PORT}:10051"
+        environment:
+            DB_SERVER_HOST: ${ZABBIX_POSTGRES_HOST}
+            POSTGRES_DB: ${ZABBIX_POSTGRES_DB}
+            POSTGRES_USER: ${ZABBIX_POSTGRES_USER}
+            POSTGRES_PASSWORD: ${ZABBIX_POSTGRES_PASSWORD}
+        depends_on:
+            - zabbix-postgres
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "/usr/sbin/zabbix_server", "--help"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    zabbix-web:
+        image: zabbix/zabbix-web-nginx-pgsql:${ZABBIX_VERSION}
+        container_name: es-zabbix-web
+        profiles: ["zabbix"]
+        ports:
+            - "${ZABBIX_WEB_PORT}:8080"
+        environment:
+            DB_SERVER_HOST: ${ZABBIX_POSTGRES_HOST}
+            POSTGRES_DB: ${ZABBIX_POSTGRES_DB}
+            POSTGRES_USER: ${ZABBIX_POSTGRES_USER}
+            POSTGRES_PASSWORD: ${ZABBIX_POSTGRES_PASSWORD}
+            ZBX_SERVER_HOST: zabbix-server
+        depends_on:
+            - zabbix-postgres
+            - zabbix-server
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+    cron:
+        image: php:${CRON_VERSION}
+        profiles: ["cron"]
+        container_name: es-cron
+        volumes:
+          - ../code:/var/www/html
+          - ./cron/crontab:/etc/cron.d/crontab
+        command: >
+          sh -c "apt-get update &&
+                 apt-get install -y --no-install-recommends cron procps &&
+                 chmod 0644 /etc/cron.d/crontab &&
+                 crontab /etc/cron.d/crontab &&
+                 touch /var/log/cron.log &&
+                 chmod 0666 /var/log/cron.log &&
+                 echo 'Starting cron daemon...' > /var/log/cron.log &&
+                 /usr/sbin/cron -f -l 2 > /var/log/cron.log 2>&1"
+        networks:
+          - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "ps aux | grep '[c]ron' || exit 1"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+
+    newman:
+        image: postman/newman:${NEWMAN_VERSION}
+        container_name: es-newman
+        profiles: ["newman"]
+        volumes:
+            - ../tools/postman:/etc/newman
+        command: ["run", "/etc/newman/postman_collection.json", "-e", "/etc/newman/postman_environment_test.json", "--insecure"]
+        networks:
+            - es-network
+        depends_on:
+            - php
+            - nginx
+
+    elasticsearch-elk:
+        image: docker.elastic.co/elasticsearch/elasticsearch:${ELK_VERSION:-8.11.1}
+        container_name: es-elasticsearch-elk
+        profiles: ["kibana"]
+        environment:
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms512m -Xmx512m
+            - xpack.security.enabled=false
+            - cluster.name=docker-cluster
+            - bootstrap.memory_lock=false
+        volumes:
+            - elasticsearch-data:/usr/share/elasticsearch/data
+        ports:
+            - "${KIBANA_ELASTICSEARCH_INTERNAL_PORT:-9200}:9200"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+            interval: 20s
+            timeout: 10s
+            retries: 5
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:${ELK_VERSION:-8.11.1}
+        container_name: es-kibana
+        profiles: ["kibana"]
+        environment:
+            - ELASTICSEARCH_HOSTS=http://elasticsearch-elk:9200
+            - XPACK_SECURITY_ENABLED=false
+        ports:
+            - "${KIBANA_PORT:-5601}:5601"
+        depends_on:
+            - elasticsearch-elk
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'Looking good'"]
+            interval: 20s
+            timeout: 10s
+            retries: 5
+
+    logstash:
+        image: docker.elastic.co/logstash/logstash:${ELK_VERSION:-8.11.1}
+        container_name: es-logstash
+        profiles: ["kibana"]
+        volumes:
+            - ./containers/logstash/pipeline:/usr/share/logstash/pipeline
+            - ./containers/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+        ports:
+            - "${LOGSTASH_PORT:-5044}:5044"
+            - "${LOGSTASH_TCP_PORT:-50000}:50000"
+        environment:
+            - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+        depends_on:
+            - elasticsearch-elk
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "curl -s http://localhost:9600 | grep -q '\"status\":\"green\"'"]
+            interval: 20s
+            timeout: 10s
+            retries: 5
+
+    mongodb-graylog:
+        image: mongo:${GRAYLOG_MONGO_VERSION}
+        container_name: es-mongodb-graylog
+        profiles: ["graylog"]
+        volumes:
+            - mongodb_data:/data/db
+        networks:
+            - es-network
+        healthcheck:
+            test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    elasticsearch-graylog:
+        image: docker.elastic.co/elasticsearch/elasticsearch:${GRAYLOG_ELASTICSEARCH_VERSION}
+        container_name: es-elasticsearch-graylog
+        profiles: ["graylog"]
+        environment:
+            - discovery.type=single-node
+            - ES_JAVA_OPTS=-Xms512m -Xmx512m
+        volumes:
+            - elasticsearch-graylog-data:/usr/share/elasticsearch/data
+        ports:
+            - "${GRAYLOG_ELASTICSEARCH_PORT}:9200"
+            - "${GRAYLOG_ELASTICSEARCH_INTERNAL_PORT}:9300"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "curl -f http://localhost:9200/_cat/health || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    graylog:
+        image: graylog/graylog:${GRAYLOG_VERSION}
+        container_name: es-graylog
+        profiles: ["graylog"]
+        ports:
+            - "${GRAYLOG_PORT:-9000}:9000"
+            - "${GRAYLOG_UDP_PORT:-12201}:12201/udp"
+        environment:
+            - GRAYLOG_HTTP_EXTERNAL_URI=http://localhost:${GRAYLOG_PORT:-9000}/
+            - GRAYLOG_ELASTICSEARCH_HOSTS=http://elasticsearch-graylog:9200
+            - GRAYLOG_MONGODB_URI=mongodb://mongodb-graylog:27017/graylog
+            - GRAYLOG_INPUT_GELF_UDP_ENABLED=true
+            - GRAYLOG_INPUT_GELF_UDP_PORT=12201
+            - GRAYLOG_INPUT_GELF_UDP_BIND_ADDRESS=0.0.0.0
+            - GRAYLOG_PASSWORD_SECRET=${GRAYLOG_PASSWORD_SECRET}
+            - GRAYLOG_ROOT_PASSWORD_SHA2=${GRAYLOG_ROOT_PASSWORD_SHA2}
+        depends_on:
+            - elasticsearch-graylog
+            - mongodb-graylog
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/lbstatus"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    es-network:
+        external: true
+        driver: bridge
+
+volumes:
+    zabbix-postgres-data:
+        driver: local
+    grafana-data:
+        driver: local
+    prometheus-data:
+        driver: local
+    elasticsearch-data:
+        driver: local
+    elasticsearch-graylog-data:
+        driver: local
+    mongodb_data:
+        driver: local

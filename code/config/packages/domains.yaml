@@ -1,0 +1,3 @@
+imports:
+    - { resource: '../../src/OrderContext/Resources/Config/doctrine.yaml' }
+    - { resource: '../../src/PaymentContext/Resources/Config/doctrine.yaml' }

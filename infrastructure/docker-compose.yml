@@ -1,0 +1,300 @@
+services:
+    nginx:
+        build:
+            context: containers/nginx
+            args:
+                NGINX_VERSION: ${NGINX_VERSION}
+        container_name: es-nginx
+        profiles: ["nginx"]
+        ports:
+            - "${NGINX_HTTP_PORT}:80"
+            - "${NGINX_HTTPS_PORT}:443"
+        volumes:
+            - ../code:/var/www/html/code
+            - ./containers/nginx/site.conf:/etc/nginx/conf.d/default.conf
+            - ./containers/nginx/ssl:/etc/nginx/ssl
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "nginx", "-t"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    apache:
+        build:
+            context: containers/apache
+            args:
+                APACHE_VERSION: ${APACHE_VERSION}
+        container_name: es-apache
+        profiles: ["apache"]
+        ports:
+            - "${APACHE_HTTP_PORT}:80"
+            - "${APACHE_HTTPS_PORT}:443"
+        volumes:
+            - ../code:/var/www/html/code
+            - ./containers/apache/apache.conf:/usr/local/apache2/conf/extra/vhost.conf
+            - ./containers/apache/apache2.conf:/usr/local/apache2/conf/httpd.conf
+            - ./containers/apache/ssl:/usr/local/apache2/ssl
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:80/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+
+    php:
+        build:
+            context: containers/php
+            args:
+                PHP_VERSION: ${PHP_VERSION}
+                UID: ${UID:-1000}
+                GID: ${GID:-1000}
+        image: es-php
+        container_name: es-php
+        ports:
+            - "${PHP_PORT}:9000"
+        volumes:
+            - ../code:/var/www/html/code
+            - ../tools:/var/www/html/tools
+            - ./containers/php/php.ini:/usr/local/etc/php/php.ini
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    postgres:
+        image: postgres:${POSTGRES_VERSION:-15}-alpine
+        container_name: es-postgres
+        profiles: ["postgres"]
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-app}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+            POSTGRES_USER: ${POSTGRES_USER:-app}
+        volumes:
+            - ./data/postgres_data:/var/lib/postgresql/data:rw
+            - ./containers/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-app}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    mysql:
+        image: mysql:${MYSQL_VERSION:-8.0}
+        container_name: es-mysql
+        profiles: ["mysql"]
+        environment:
+            MYSQL_DATABASE: ${MYSQL_DB:-app}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-!ChangeMe!}
+            MYSQL_USER: ${MYSQL_USER:-app}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-!ChangeMe!}
+        volumes:
+            - ./data/mysql_data:/var/lib/mysql:rw
+            - ./containers/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+        ports:
+            - "${MYSQL_PORT}:3306"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${MYSQL_USER:-app}", "-p${MYSQL_PASSWORD:-!ChangeMe!}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    mongodb:
+        image: mongo:${MONGO_VERSION:-6.0}
+        container_name: es-mongodb
+        profiles: [ "mongodb" ]
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+            MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password}
+            MONGO_INITDB_DATABASE: ${MONGO_DB:-app}
+        volumes:
+            - ./data/mongodb:/data/db:rw
+            - ./containers/mongodb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+        ports:
+            - "${MONGO_PORT}:27017"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    cassandra:
+        image: cassandra:${CASSANDRA_VERSION}
+        container_name: es-cassandra
+        profiles: [ "cassandra" ]
+        restart: unless-stopped
+        ports:
+            - ${CASSANDRA_PORT}:9042
+        volumes:
+            - ./data/cassandra:/var/lib/cassandra
+        environment:
+            - CASSANDRA_CLUSTER_NAME=AppCluster
+            - CASSANDRA_ENDPOINT_SNITCH=SimpleSnitch
+            - CASSANDRA_DC=datacenter1
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+            start_period: 40s
+
+    redis:
+        image: redis:${REDIS_VERSION}
+        container_name: es-redis
+        profiles: ["redis"]
+        ports:
+            - "${REDIS_PORT}:6379"
+        volumes:
+            - ./data/redis:/data
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    rabbitmq:
+        image: rabbitmq:${RABBITMQ_VERSION}
+        container_name: es-rabbitmq
+        profiles: ["rabbitmq"]
+        ports:
+            - "${RABBITMQ_PORT}:5672"
+            - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-app}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-!ChangeMe!}
+        volumes:
+            - ./data/rabbitmq:/var/lib/rabbitmq
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    memcached:
+        image: memcached:${MEMCACHED_VERSION}
+        container_name: es-memcached
+        profiles: ["memcached"]
+        ports:
+            - "${MEMCACHED_PORT}:11211"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "echo stats | nc localhost 11211"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    kafka:
+        image: 'bitnami/kafka:${KAFKA_VERSION}'
+        profiles: ["kafka"]
+        container_name: es-kafka
+        environment:
+            - KAFKA_ENABLE_KRAFT=yes
+            - KAFKA_CFG_PROCESS_ROLES=broker,controller
+            - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+            - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9094
+            - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - KAFKA_CFG_BROKER_ID=1
+            - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@es-kafka:9094
+            - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://es-kafka:9092
+            - ALLOW_PLAINTEXT_LISTENER=yes
+            - KAFKA_KRAFT_CLUSTER_ID=${KAFKA_CLUSTER_ID}
+        ports:
+            - "${KAFKA_PORT}:9092"
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD-SHELL", "/opt/bitnami/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+
+    kafka-ui:
+        image: provectuslabs/kafka-ui:latest
+        container_name: es-kafka-ui
+        profiles: ["kafka"]
+        ports:
+            - "${KAFKA_UI_PORT}:8080"
+        environment:
+            - KAFKA_CLUSTERS_0_NAME=local
+            - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=es-kafka:9092
+        networks:
+            - es-network
+        depends_on:
+            - kafka
+        healthcheck:
+            test: ["CMD", "wget", "--spider", "http://localhost:8080"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+
+    elasticsearch:
+        image: elasticsearch:${ELASTICSEARCH_APP_VERSION}
+        container_name: es-elasticsearch
+        profiles: ["elasticsearch"]
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        ports:
+            - "${ELASTICSEARCH_APP_PORT:-9201}:9200"
+            - "${ELASTICSEARCH_APP_INTERNAL_PORT:-9301}:9300"
+        volumes:
+            - ./data/elasticsearch:/usr/share/elasticsearch/data
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9200"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+
+    solr:
+        image: solr:${SOLR_VERSION}
+        container_name: es-solr
+        profiles: ["solr"]
+        command:
+            - bash
+            - -c
+            - 'solr-precreate default /opt/solr/server/solr/configsets/_default'
+        environment:
+            - SOLR_OPTS=-Dsolr.disableConfigSetsCreateAuthChecks=true
+        ports:
+            - "${SOLR_PORT}:8983"
+        volumes:
+            - ./data/solr:/var/solr/data
+        networks:
+            - es-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8983/solr/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+
+networks:
+    es-network:
+        external: true
+        driver: bridge

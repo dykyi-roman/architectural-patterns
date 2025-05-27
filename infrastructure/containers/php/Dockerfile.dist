@@ -1,0 +1,157 @@
+# nginx
+
+# Arguments defined in docker-compose.yml
+ARG PHP_VERSION
+FROM php:${PHP_VERSION}-fpm
+
+ARG UID=1000
+ARG GID=1000
+
+# Set working directory
+WORKDIR /var/www/html/code
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    # Build tools
+    autoconf \
+    dpkg-dev \
+    file \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    pkg-config \
+    re2c \
+    # Development tools
+    git \
+    nano \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install core PHP extensions
+RUN apt-get update && apt-get install -y \
+    # ZIP support
+    libzip-dev \
+    # Cryptography
+    libmcrypt-dev \
+    libssl-dev \
+    openssl \
+    # HTTP and SSH
+    libcurl4-openssl-dev \
+    libssh-dev \
+    openssh-server \
+    # Character encoding and internationalization
+    libonig-dev \
+    libicu-dev \
+    # Event handling
+    libevent-dev \
+    # UUID generation
+    uuid-dev \
+    # XML and image processing
+    libxml2-dev \
+    libpng-dev \
+    # GeoIP support
+    libgeoip-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install -j$(nproc) \
+        bcmath \
+        iconv \
+        intl \
+        mbstring \
+        opcache \
+        pcntl \
+        sockets \
+        zip \
+    && docker-php-ext-configure gd \
+    && docker-php-ext-install -j$(nproc) gd
+
+# <<<mailhog,papercut<<<
+#RUN apt-get update && apt-get install -y \
+#    msmtp \
+#    msmtp-mta \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && apt-get clean
+#
+#COPY msmtprc /etc/msmtprc
+#RUN chmod 0644 /etc/msmtprc && \
+#    chown root:root /etc/msmtprc && \
+#    ln -sf /usr/bin/msmtp /usr/sbin/sendmail && \
+#    ln -sf /usr/bin/msmtp /usr/bin/sendmail && \
+#    touch /var/log/msmtp.log && \
+#    chown www-data:www-data /var/log/msmtp.log && \
+#    chmod 666 /var/log/msmtp.log
+
+# <<<mysql<<<
+#RUN apt-get update && apt-get install -y \
+#    && docker-php-ext-install -j$(nproc) \
+#        pdo_mysql
+
+# <<<postgres<<<
+#RUN apt-get update && apt-get install -y \
+#    libpq-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && docker-php-ext-install -j$(nproc) \
+#        pgsql \
+#        pdo_pgsql
+
+# <<<mongodb<<<
+#RUN apt-get update && apt-get install -y libssl-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && pecl install mongodb-1.17.0 \
+#    && docker-php-ext-enable mongodb
+
+# <<<cassandra<<<
+#RUN apt-get update && apt-get install -y \
+#    cmake \
+#    g++ \
+#    libgmp-dev \
+#    libpcre3-dev \
+#    libuv1-dev \
+#    libssl-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && pecl install cassandra \
+#    && docker-php-ext-enable cassandra
+
+# <<<redis<<<
+#RUN pecl install redis \
+#    && docker-php-ext-enable redis
+
+# <<<kafka<<<
+#RUN apt-get update && apt-get install -y \
+#    librdkafka-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && pecl install rdkafka \
+#    && docker-php-ext-enable rdkafka
+
+# <<<memcached<<<
+#RUN apt-get update && apt-get install -y \
+#    libmemcached-dev \
+#    zlib1g-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && pecl install memcached \
+#    && docker-php-ext-enable memcached
+
+# <<<rabbitmq<<<
+#RUN apt-get update && apt-get install -y \
+#    librabbitmq-dev \
+#    && rm -rf /var/lib/apt/lists/* \
+#    && pecl install amqp \
+#    && docker-php-ext-enable amqp
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+# Create user and configure PHP-FPM
+RUN groupadd --gid ${GID} es \
+    && useradd --uid ${UID} --gid ${GID} --shell /bin/bash --create-home es \
+    && sed -i "s/user = www-data/user = es/g" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/group = www-data/group = es/g" /usr/local/etc/php-fpm.d/www.conf \
+    && usermod -aG mail es
+
+# Set proper permissions
+RUN chown -R es:es /var/www/html
+
+# Switch to non-root user
+USER es
