@@ -12,9 +12,6 @@ use Symfony\Component\Lock\LockInterface;
 
 final readonly class OutboxEventProcessor
 {
-    /**
-     * @param string $exchangeName Имя обменника в RabbitMQ
-     */
     public function __construct(
         private OutboxEventRepository $outboxRepository,
         private AMQPStreamConnection $amqpConnection,
@@ -25,14 +22,14 @@ final readonly class OutboxEventProcessor
     }
 
     /**
-     * Обрабатывает необработанные события из Outbox
-     * 
-     * Процесс использует блокировку для обеспечения того, что только один экземпляр процессора
-     * работает в любой момент времени, что гарантирует отсутствие дублирования сообщений.
+     * Processes unprocessed events from Outbox
      *
-     * @param int $batchSize Количество событий, обрабатываемых за один вызов
-     * @return int Количество успешно обработанных событий
-     * @throws \Exception При непредвиденной ошибке
+     * The process uses locking to ensure that only one instance of the processor is
+     * running at any given time, ensuring that messages are not duplicated.
+     *
+     * @param int $batchSize Number of events processed per call
+     * @return int Number of events successfully processed
+     * @throws \Exception If an unexpected error occurs
      */
     public function processOutboxEvents(int $batchSize = 100): int
     {
@@ -55,20 +52,18 @@ final readonly class OutboxEventProcessor
             $channel = $this->amqpConnection->channel();
             $channel->exchange_declare(
                 $this->exchangeName, 
-                'topic',     // тип обменника
-                false,      // passive
-                true,       // durable (сохраняется при перезагрузке брокера)
-                false       // auto_delete
+                'topic',
+                false,
+                true,
+                false,
             );
             
             $successCount = 0;
             
             foreach ($events as $event) {
                 try {
-                    // Определяем routing key на основе типа события
                     $routingKey = $this->getRoutingKeyFromEventType($event->getEventType());
                     
-                    // Публикуем сообщение в RabbitMQ
                     $message = new AMQPMessage(
                         $event->getPayload(),
                         [
@@ -82,7 +77,6 @@ final readonly class OutboxEventProcessor
                     
                     $channel->basic_publish($message, $this->exchangeName, $routingKey);
                     
-                    // Помечаем событие как обработанное
                     $event->markAsProcessed();
                     $this->outboxRepository->update($event);
                     
@@ -104,7 +98,7 @@ final readonly class OutboxEventProcessor
                     $this->outboxRepository->update($event);
                 }
             }
-            
+
             $channel->close();
             
             return $successCount;
@@ -113,29 +107,22 @@ final readonly class OutboxEventProcessor
         }
     }
     
-    /**
-     * Создает объект блокировки для защиты от параллельного выполнения
-     *
-     * @return LockInterface
-     */
     private function createLock(): LockInterface
     {
         return $this->lockFactory->createLock('outbox_event_processor', 60);
     }
-    
+
     /**
-     * Определяет routing key на основе типа события
-     *
-     * @param string $eventType Полное имя класса события
-     * @return string Routing key для RabbitMQ
+     * @param string $eventType Full event class name
+     * @return string Routing key for RabbitMQ
      */
     private function getRoutingKeyFromEventType(string $eventType): string
     {
-        // Извлекаем короткое имя класса события
+        // Extract the short name of the event class
         $parts = explode('\\', $eventType);
         $shortName = end($parts);
         
-        // Преобразуем в snake_case для использования в качестве routing key
+        // Convert to snake_case for use as routing key
         $routingKey = preg_replace('/(?<!^)[A-Z]/', '_$0', $shortName);
         $routingKey = strtolower(str_replace('_event', '', $routingKey));
         

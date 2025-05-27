@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OrderContext\Infrastructure\Outbox;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use RuntimeException;
 
 final readonly class OutboxEventRepository
@@ -16,11 +15,7 @@ final readonly class OutboxEventRepository
     }
 
     /**
-     * Сохраняет событие в таблицу outbox
-     *
-     * @param OutboxEvent $event Событие для сохранения
-     * @return void
-     * @throws RuntimeException При ошибке сохранения
+     * @throws RuntimeException
      */
     public function save(OutboxEvent $event): void
     {
@@ -32,22 +27,22 @@ final readonly class OutboxEventRepository
                 'aggregate_id' => $event->getAggregateId(),
                 'payload' => $event->getPayload(),
                 'created_at' => $event->getCreatedAt()->format('Y-m-d H:i:s.u'),
-                'processed_at' => $event->getProcessedAt()?->format('Y-m-d H:i:s.u'),
-                'is_processed' => $event->isProcessed(),
-                'retry_count' => $event->getRetryCount(),
-                'error' => $event->getError(),
+                'processed_at' => $event->processedAt?->format('Y-m-d H:i:s.u'),
+                'is_processed' => $event->isProcessed,
+                'retry_count' => $event->retryCount,
+                'error' => $event->error,
             ]);
-        } catch (Exception $e) {
-            throw new RuntimeException("Ошибка при сохранении события в outbox: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException(
+                sprintf('Ошибка при сохранении события в outbox %s', $exception->getMessage()),
+                0,
+                $exception,
+            );
         }
     }
 
     /**
-     * Обновляет событие в таблице outbox
-     *
-     * @param OutboxEvent $event Событие для обновления
-     * @return void
-     * @throws RuntimeException При ошибке обновления
+     * @throws RuntimeException
      */
     public function update(OutboxEvent $event): void
     {
@@ -55,24 +50,21 @@ final readonly class OutboxEventRepository
             $this->connection->update(
                 'outbox_events',
                 [
-                    'processed_at' => $event->getProcessedAt()?->format('Y-m-d H:i:s.u'),
-                    'is_processed' => $event->isProcessed(),
-                    'retry_count' => $event->getRetryCount(),
-                    'error' => $event->getError(),
+                    'processed_at' => $event->processedAt?->format('Y-m-d H:i:s.u'),
+                    'is_processed' => $event->isProcessed,
+                    'retry_count' => $event->retryCount,
+                    'error' => $event->error,
                 ],
                 ['id' => $event->getId()]
             );
-        } catch (Exception $e) {
-            throw new RuntimeException("Ошибка при обновлении события в outbox: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException(sprintf('Error updating event in: %s', $exception->getMessage()), 0, $exception);
         }
     }
 
     /**
-     * Получает список необработанных событий
-     *
-     * @param int $limit Максимальное количество событий
-     * @return array<OutboxEvent> Массив необработанных событий
-     * @throws RuntimeException При ошибке чтения
+     * @return array<OutboxEvent>
+     * @throws RuntimeException
      */
     public function findUnprocessed(int $limit = 100): array
     {
@@ -92,16 +84,19 @@ final readonly class OutboxEventRepository
             }
 
             return $events;
-        } catch (Exception $e) {
-            throw new RuntimeException("Ошибка при получении необработанных событий: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException(
+                sprintf('Error receiving unhandled events:, %s', $exception->getMessage()),
+                0,
+                $exception,
+            );
         }
     }
 
     /**
-     * Создает объект OutboxEvent из данных БД
-     *
-     * @param array<string, mixed> $data Данные из БД
+     * @param array<string, mixed> $data
      * @return OutboxEvent
+     * @throws \DateMalformedStringException
      */
     private function hydrateOutboxEvent(array $data): OutboxEvent
     {

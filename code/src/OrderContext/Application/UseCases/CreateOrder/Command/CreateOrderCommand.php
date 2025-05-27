@@ -12,7 +12,6 @@ use OrderContext\DomainModel\ValueObject\CustomerId;
 final readonly class CreateOrderCommand
 {
     /**
-     * @param CustomerId $customerId Customer identifier
      * @param array<array{product_id: mixed, quantity: int, price: mixed}> $items Order items
      */
     public function __construct(

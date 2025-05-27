@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\EventStore\EventHandler;
 
-use OrderContext\DomainModel\Model\Event\DomainEvent;
-use OrderContext\DomainModel\Model\Event\OrderCreatedEvent;
+use OrderContext\DomainModel\Event\DomainEventInterface;
 use Psr\Log\LoggerInterface;
-use Repository\ElasticsearchOrderReadModelRepository;
 
-/**
- * Обработчик события создания заказа для обновления read-модели
- */
 final readonly class OrderCreatedEventHandler implements EventHandlerInterface
 {
     /**
-     * @param ElasticsearchOrderReadModelRepository $readModelRepository Репозиторий для чтения заказов
+     * @param ElasticsearchOrderReadModelRepository\ $readModelRepository Репозиторий для чтения заказов
      * @param LoggerInterface $logger Логгер
      */
     public function __construct(
@@ -27,7 +22,7 @@ final readonly class OrderCreatedEventHandler implements EventHandlerInterface
     /**
      * @inheritDoc
      */
-    public function handle(DomainEvent $event): void
+    public function handle(DomainEventInterface $event): void
     {
         if (!$event instanceof OrderCreatedEvent) {
             throw new \InvalidArgumentException(

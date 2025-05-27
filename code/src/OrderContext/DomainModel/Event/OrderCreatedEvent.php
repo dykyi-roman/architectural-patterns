@@ -8,9 +8,6 @@ use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
 
-/**
- * Событие создания заказа
- */
 final readonly class OrderCreatedEvent extends AbstractDomainEvent
 {
     /**
@@ -42,29 +39,17 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
         return $this->orderId;
     }
 
-    /**
-     * Возвращает идентификатор клиента
-     *
-     * @return CustomerId
-     */
     public function getCustomerId(): CustomerId
     {
         return $this->customerId;
     }
 
-    /**
-     * Возвращает общую сумму заказа
-     *
-     * @return Money
-     */
     public function getTotalAmount(): Money
     {
         return $this->totalAmount;
     }
 
     /**
-     * Возвращает элементы заказа
-     *
      * @return array<array{product_id: string, quantity: int, price: array{amount: int, currency: string}}>
      */
     public function getItems(): array
@@ -72,12 +57,9 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
         return $this->items;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
-        return array_merge(parent::toArray(), [
+        return array_merge(parent::jsonSerialize(), [
             'order_id' => $this->orderId->toString(),
             'customer_id' => $this->customerId->toString(),
             'total_amount' => [
@@ -89,10 +71,8 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
     }
 
     /**
-     * Создает событие из массива данных
-     *
      * @param array<string, mixed> $data Данные события
-     * @return self
+     * @throws \DateMalformedStringException
      */
     public static function fromArray(array $data): self
     {

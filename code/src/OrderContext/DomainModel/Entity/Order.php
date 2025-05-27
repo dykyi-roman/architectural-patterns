@@ -42,6 +42,11 @@ final class Order
     ) {
     }
 
+    public function changeStatus(OrderStatus $status): void
+    {
+        $this->status = $status;
+    }
+
     /**
      * Создает новый заказ
      *
