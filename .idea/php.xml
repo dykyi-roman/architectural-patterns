@@ -162,6 +162,11 @@
       <path value="$PROJECT_DIR$/code/vendor/myclabs/deep-copy" />
       <path value="$PROJECT_DIR$/code/vendor/guzzlehttp/psr7" />
       <path value="$PROJECT_DIR$/code/vendor/openmetrics-php/exposition-text" />
+      <path value="$PROJECT_DIR$/code/vendor/symfony/lock" />
+      <path value="$PROJECT_DIR$/code/vendor/paragonie/random_compat" />
+      <path value="$PROJECT_DIR$/code/vendor/paragonie/constant_time_encoding" />
+      <path value="$PROJECT_DIR$/code/vendor/phpseclib/phpseclib" />
+      <path value="$PROJECT_DIR$/code/vendor/php-amqplib/php-amqplib" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

@@ -18,7 +18,7 @@ final readonly class ChangeOrderStatusCommandHandler
      * @throws \InvalidArgumentException When command is not valid
      * @throws \DomainException When order not found or status change is invalid
      */
-    #[AsMessageHandler]
+    #[AsMessageHandler(bus: 'command.bus')]
     public function __invoke(ChangeOrderStatusCommand $command): void
     {
         // Find order by id

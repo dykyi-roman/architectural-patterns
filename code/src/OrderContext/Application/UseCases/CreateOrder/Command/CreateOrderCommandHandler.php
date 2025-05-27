@@ -19,7 +19,7 @@ final readonly class CreateOrderCommandHandler
     /**
      * @throws \InvalidArgumentException When command is not valid
      */
-    #[AsMessageHandler]
+    #[AsMessageHandler(bus: 'command.bus')]
     public function __invoke(CreateOrderCommand $command): void
     {
         // Создаем новый заказ

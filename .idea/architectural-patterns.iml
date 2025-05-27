@@ -152,6 +152,11 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/webmozart/glob" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/zircote/swagger-php" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/paragonie/constant_time_encoding" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/paragonie/random_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-amqplib/php-amqplib" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpseclib/phpseclib" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/lock" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

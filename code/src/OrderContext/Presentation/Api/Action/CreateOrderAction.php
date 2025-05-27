@@ -25,7 +25,6 @@ final class CreateOrderAction extends AbstractController
     public function __invoke(
         #[MapRequestPayload] CreateOrderRequest $request,
     ): JsonResponse {
-        dump($request); die();  
         $this->applicationService->execute(
             new CreateOrderCommand(
                 CustomerId::fromString($request->customerId),

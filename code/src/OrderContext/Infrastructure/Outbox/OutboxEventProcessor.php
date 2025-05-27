@@ -10,16 +10,9 @@ use PhpAmqpLib\Message\AMQPMessage;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 
-/**
- * Процессор для отправки событий из Outbox в RabbitMQ
- */
 final readonly class OutboxEventProcessor
 {
     /**
-     * @param OutboxEventRepository $outboxRepository Репозиторий для работы с Outbox событиями
-     * @param AMQPStreamConnection $amqpConnection Соединение с RabbitMQ
-     * @param LockFactory $lockFactory Фабрика блокировок для обеспечения идемпотентности
-     * @param LoggerInterface $logger Логгер
      * @param string $exchangeName Имя обменника в RabbitMQ
      */
     public function __construct(

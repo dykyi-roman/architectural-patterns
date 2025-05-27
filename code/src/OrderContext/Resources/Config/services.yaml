@@ -11,18 +11,18 @@ services:
         exclude:
             - '../../Resources/'
             - '../../Presentation/Api/{Request, Response}/'
-            - '../../DomainModel/{Entity, Event, Enum, ValueObject}/'
-            - '../../Tests/'
+            - '../../Application/**/*{Command,Query}.php'
+            - '../../DomainModel/{Dto,Event,Model,ValueObject,Exception}/'
             - '../../**/Tests/'
         tags: ['controller.service_arguments']
 
     # Repositories
     OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface:
-        class: OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository
+        alias: OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository
 
     OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository:
         arguments:
-            $entityManager: '@doctrine.orm.site_entity_manager'
+            $entityManager: '@doctrine.orm.default_entity_manager'
 
     OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface:
         class: OrderContext\Infrastructure\Repository\ElasticsearchOrderReadModelRepository

@@ -20,7 +20,7 @@ final readonly class GetOrdersListQueryHandler
      * @return array{items: array<array<string, mixed>>, total: int, page: int, limit: int} Orders list with pagination
      * @throws \InvalidArgumentException When query is not valid
      */
-    #[AsMessageHandler]
+    #[AsMessageHandler(bus: 'query.bus')]
     public function __invoke(GetOrdersListQuery $query): array
     {
         // Get orders list with pagination from read model repository

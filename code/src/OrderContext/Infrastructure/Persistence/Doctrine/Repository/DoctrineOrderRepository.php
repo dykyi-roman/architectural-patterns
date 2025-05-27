@@ -4,52 +4,47 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\Persistence\Doctrine\Repository;
 
-use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use RuntimeException;
 
-/**
- * Реализация репозитория для работы с заказами через Doctrine ORM
- */
 final readonly class DoctrineOrderRepository implements OrderWriteModelRepositoryInterface
 {
-    /**
-     * @param EntityManagerInterface $entityManager Менеджер сущностей Doctrine
-     */
+    /** @var EntityRepository<Order> */
+    private EntityRepository $repository;
+
     public function __construct(
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
     ) {
+        $this->repository = $this->entityManager->getRepository(Order::class);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function save(Order $order): void
     {
         try {
             $this->entityManager->persist($order);
             $this->entityManager->flush();
-        } catch (Exception $e) {
-            throw new RuntimeException("Ошибка при сохранении заказа: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException("Ошибка при сохранении заказа: {$exception->getMessage()}", 0, $exception);
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function exists(OrderId $orderId): bool
     {
         try {
-            $repository = $this->entityManager->getRepository(Order::class);
-            $count = $repository->count(['id' => $orderId->toString()]);
-            
+            $count = $this->repository->count(['id' => $orderId->toString()]);
+
             return $count > 0;
-        } catch (Exception $e) {
-            throw new RuntimeException("Ошибка при проверке существования заказа: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $exception) {
+            throw new RuntimeException(
+                "Ошибка при проверке существования заказа: {$exception->getMessage()}",
+                0,
+                $exception
+            );
         }
     }
 
@@ -58,8 +53,7 @@ final readonly class DoctrineOrderRepository implements OrderWriteModelRepositor
      */
     public function findById(OrderId $orderId): Order
     {
-        $repository = $this->entityManager->getRepository(Order::class);
-        $order = $repository->find($orderId->toString());
+        $order = $this->repository->find($orderId->toString());
 
         return $order ?? throw new OrderNotFoundException($orderId);
     }

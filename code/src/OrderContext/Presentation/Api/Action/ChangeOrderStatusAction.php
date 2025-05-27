@@ -24,31 +24,16 @@ final class ChangeOrderStatusAction extends AbstractController
 
     #[Route('/api/orders/{orderId}/status', methods: ['PATCH'])]
     public function __invoke(
-        string $orderId, 
+        string $orderId,
         #[MapRequestPayload] ChangeOrderStatusRequest $request
-    ): JsonResponse
-    {
-        try {
-            // Create command for changing order status
-            $command = new ChangeOrderStatusCommand(
+    ): JsonResponse {
+        $this->applicationService->execute(
+            new ChangeOrderStatusCommand(
                 OrderId::fromString($orderId),
                 OrderStatus::from($request->status)
-            );
-            
-            // Execute command via application service
-            $this->applicationService->execute($command);
-            
-            // Return successful response
-            return new JsonResponse(['message' => 'Статус заказа успешно обновлен'], Response::HTTP_OK);
-        } catch (\InvalidArgumentException $e) {
-            // Validation errors
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        } catch (\Throwable $e) {
-            // Internal server errors
-            return new JsonResponse(
-                ['error' => 'Произошла внутренняя ошибка сервера'],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
+            ),
+        );
+
+        return new JsonResponse(['message' => 'Статус заказа успешно обновлен'], Response::HTTP_OK);
     }
 }

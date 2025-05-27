@@ -18,7 +18,7 @@ final readonly class GetOrderQueryHandler
      * @return array<string, mixed>|null Order data or null if not found
      * @throws \InvalidArgumentException When query is not valid
      */
-    #[AsMessageHandler]
+    #[AsMessageHandler(bus: 'query.bus')]
     public function __invoke(GetOrderQuery $query): ?array
     {
         return $this->orderReadModelRepository->findById($query->getOrderId());

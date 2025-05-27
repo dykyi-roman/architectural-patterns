@@ -8,16 +8,10 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use RuntimeException;
 
-/**
- * Репозиторий для работы с событиями outbox
- */
 final readonly class OutboxEventRepository
 {
-    /**
-     * @param Connection $connection Соединение с базой данных
-     */
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
     ) {
     }
 

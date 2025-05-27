@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\Outbox;
 
-use OrderContext\DomainModel\Model\Event\DomainEvent;
+use OrderContext\DomainModel\Event\DomainEventInterface;
 use RuntimeException;
 
 /**
@@ -23,7 +23,7 @@ final readonly class OutboxPublisher implements OutboxPublisherInterface
     /**
      * @inheritDoc
      */
-    public function publish(DomainEvent $event): void
+    public function publish(DomainEventInterface $event): void
     {
         try {
             $payload = json_encode($event->toArray(), JSON_THROW_ON_ERROR);
