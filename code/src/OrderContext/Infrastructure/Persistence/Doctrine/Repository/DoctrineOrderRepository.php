@@ -21,6 +21,7 @@ final readonly class DoctrineOrderRepository implements OrderWriteModelRepositor
 
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private EventStoreInterface $eventStore,
     ) {
         $this->repository = $this->entityManager->getRepository(Order::class);
     }
@@ -35,6 +36,11 @@ final readonly class DoctrineOrderRepository implements OrderWriteModelRepositor
             $this->entityManager->flush();
         } catch (\Throwable $exception) {
             throw new SaveOrderException($exception->getMessage());
+        }
+
+        $events = $order->releaseEvents();
+        foreach ($events as $event) {
+            $this->eventStore->store($event);
         }
     }
 

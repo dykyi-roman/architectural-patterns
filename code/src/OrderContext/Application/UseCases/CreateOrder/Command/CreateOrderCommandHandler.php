@@ -9,6 +9,7 @@ use OrderContext\DomainModel\Entity\OrderItem;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
 use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
+use OrderContext\Infrastructure\EventStore\EventStoreInterface;
 use Shared\DomainModel\Service\OutboxPublisherInterface;
 use Shared\DomainModel\Service\TransactionServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -19,7 +20,8 @@ final readonly class CreateOrderCommandHandler
     public function __construct(
         private OrderWriteModelRepositoryInterface $orderRepository,
         private OutboxPublisherInterface $outboxPublisher,
-        private TransactionServiceInterface $transactionService
+        private TransactionServiceInterface $transactionService,
+        private EventStoreInterface $eventStore,
     ) {
     }
 
@@ -35,17 +37,19 @@ final readonly class CreateOrderCommandHandler
             $order = Order::create($command->orderId, $command->customerId, ...$command->getOrderItems());
 
             $this->orderRepository->save($order);
-            
-            $this->outboxPublisher->publish(
-                new OrderCreatedEvent(
-                    Uuid::v4()->toRfc4122(),
-                    new \DateTimeImmutable(),
-                    $order->getId(),
-                    $order->getCustomerId(),
-                    $order->calculateTotalAmount(),
-                    array_map(fn(OrderItem $item) => $item->jsonSerialize(), $order->getItems()),
-                ),
+
+            $event = new OrderCreatedEvent(
+                Uuid::v4()->toRfc4122(),
+                new \DateTimeImmutable(),
+                $order->getId(),
+                $order->getCustomerId(),
+                $order->calculateTotalAmount(),
+                array_map(fn(OrderItem $item) => $item->jsonSerialize(), $order->getItems()),
             );
+
+            $this->eventStore->append($event);
+
+            $this->outboxPublisher->publish($event);
         });
     }
 }

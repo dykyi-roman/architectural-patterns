@@ -28,7 +28,7 @@ final readonly class CreateOrderAction
             new CreateOrderCommand(
                 OrderId::generate(),
                 CustomerId::fromString($request->customerId),
-                $request->getItems(),
+                ...$request->getItems(),
             ),
         );
 

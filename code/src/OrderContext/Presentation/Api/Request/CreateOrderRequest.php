@@ -47,6 +47,9 @@ final readonly class CreateOrderRequest
     ) {
     }
 
+    /**
+     * @return OrderItem[]
+     */
     public function getItems(): array
     {
         return array_map(

@@ -14,6 +14,7 @@ use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
 use Shared\DomainModel\Event\DomainEventInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Order Aggregate
@@ -22,7 +23,7 @@ final class Order
 {
     /** @var array<OrderItem> */
     private array $items = [];
-    
+
     /** @var array<\Shared\DomainModel\Event\DomainEventInterface> */
     private array $domainEvents = [];
 
@@ -44,7 +45,18 @@ final class Order
 
     public function changeStatus(OrderStatus $status): void
     {
+        $previousStatus = $this->status;
         $this->status = $status;
+
+        $this->recordEvent(
+            new OrderStatusChangedEvent(
+                Uuid::v4()->toRfc4122(),
+                new \DateTimeImmutable(),
+                $this->id,
+                $previousStatus,
+                $this->status,
+            )
+        );
     }
 
     /**
@@ -70,14 +82,16 @@ final class Order
             $now
         );
 
-        $order->recordEvent(new OrderCreatedEvent(
-            uuid_create(),
-            $now,
-            $orderId,
-            $customerId,
-            $order->calculateTotalAmount(),
-            array_map(fn(OrderItem $item) => $item->jsonSerialize(), $items),
-        ));
+        $order->recordEvent(
+            new OrderCreatedEvent(
+                uuid_create(),
+                $now,
+                $orderId,
+                $customerId,
+                $order->calculateTotalAmount(),
+                array_map(fn(OrderItem $item) => $item->jsonSerialize(), $items),
+            )
+        );
 
         return $order;
     }
@@ -91,7 +105,9 @@ final class Order
     public function markAsPaid(): void
     {
         if (!$this->status->canBePaid()) {
-            throw new DomainException("Невозможно изменить статус заказа {$this->id} на PAID. Текущий статус: {$this->status->value}");
+            throw new DomainException(
+                "Невозможно изменить статус заказа {$this->id} на PAID. Текущий статус: {$this->status->value}"
+            );
         }
 
         $previousStatus = $this->status;
@@ -99,13 +115,15 @@ final class Order
         $this->updatedAt = new DateTimeImmutable();
 
         // Генерация события изменения статуса
-        $this->recordEvent(new OrderStatusChangedEvent(
-            uuid_create(),
-            $this->updatedAt,
-            $this->id,
-            $previousStatus,
-            $this->status
-        ));
+        $this->recordEvent(
+            new OrderStatusChangedEvent(
+                uuid_create(),
+                $this->updatedAt,
+                $this->id,
+                $previousStatus,
+                $this->status
+            )
+        );
     }
 
     /**
@@ -117,7 +135,9 @@ final class Order
     public function cancel(): void
     {
         if (!$this->status->canBeCancelled()) {
-            throw new DomainException("Невозможно изменить статус заказа {$this->id} на CANCELLED. Текущий статус: {$this->status->value}");
+            throw new DomainException(
+                "Невозможно изменить статус заказа {$this->id} на CANCELLED. Текущий статус: {$this->status->value}"
+            );
         }
 
         $previousStatus = $this->status;
@@ -125,13 +145,15 @@ final class Order
         $this->updatedAt = new DateTimeImmutable();
 
         // Генерация события изменения статуса
-        $this->recordEvent(new OrderStatusChangedEvent(
-            uuid_create(),
-            $this->updatedAt,
-            $this->id,
-            $previousStatus,
-            $this->status
-        ));
+        $this->recordEvent(
+            new OrderStatusChangedEvent(
+                uuid_create(),
+                $this->updatedAt,
+                $this->id,
+                $previousStatus,
+                $this->status
+            )
+        );
     }
 
     /**

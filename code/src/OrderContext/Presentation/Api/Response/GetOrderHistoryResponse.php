@@ -6,8 +6,13 @@ namespace OrderContext\Presentation\Api\Response;
 
 use Shared\Presentation\Responder\ResponderInterface;
 
-final readonly class CreateOrderResponse implements ResponderInterface
+final readonly class GetOrderHistoryResponse implements ResponderInterface
 {
+    public function __construct(
+        private array $payload,
+    ) {
+    }
+
     public function respond(): ResponderInterface
     {
         return $this;
@@ -18,14 +23,12 @@ final readonly class CreateOrderResponse implements ResponderInterface
      */
     public function payload(): array
     {
-        return [
-            'message' => 'Order successfully created',
-        ];
+        return $this->payload;
     }
 
     public function statusCode(): int
     {
-        return 201;
+        return 200;
     }
 
     public function headers(): array

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace OrderContext\Application\UseCases\CreateOrder\Command;
 
-use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Entity\OrderItem;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\OrderId;
 
 /**
- * @see \OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommandHandler
+ * @see CreateOrderCommandHandler
  */
 final readonly class CreateOrderCommand
 {

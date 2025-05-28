@@ -7,6 +7,7 @@ namespace OrderContext\Application\UseCases\ChangeOrderStatus\Command;
 use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
 use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
+use OrderContext\Infrastructure\EventStore\EventStoreInterface;
 use Shared\DomainModel\Service\OutboxPublisherInterface;
 use Shared\DomainModel\Service\TransactionServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -17,7 +18,7 @@ final readonly class ChangeOrderStatusCommandHandler
     public function __construct(
         private OrderWriteModelRepositoryInterface $orderRepository,
         private OutboxPublisherInterface $outboxPublisher,
-        private TransactionServiceInterface $transactionService
+        private TransactionServiceInterface $transactionService,
     ) {
     }
 
@@ -31,7 +32,6 @@ final readonly class ChangeOrderStatusCommandHandler
     public function __invoke(ChangeOrderStatusCommand $command): void
     {
         $this->transactionService->execute(function() use ($command): void {
-            // Find order by id
             $order = $this->orderRepository->findById($command->getOrderId());
             if ($order === null) {
                 throw new \DomainException('Order not found');
@@ -42,17 +42,16 @@ final readonly class ChangeOrderStatusCommandHandler
 
             $order->changeStatus($command->getNewStatus());
             $this->orderRepository->save($order);
-            
-            // Create and publish domain event via outbox pattern
-            $this->outboxPublisher->publish(
-                new OrderStatusChangedEvent(
-                    Uuid::v4()->toRfc4122(),
-                    new \DateTimeImmutable(),
-                    $order->getId(),
-                    $previousStatus,
-                    $order->getStatus()
-                )
+
+            $event = new OrderStatusChangedEvent(
+                Uuid::v4()->toRfc4122(),
+                new \DateTimeImmutable(),
+                $order->getId(),
+                $previousStatus,
+                $order->getStatus()
             );
+
+            $this->outboxPublisher->publish($event);
         });
     }
 }

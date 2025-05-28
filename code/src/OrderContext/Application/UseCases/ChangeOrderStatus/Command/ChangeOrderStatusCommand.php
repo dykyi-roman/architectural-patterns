@@ -8,7 +8,7 @@ use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
 
 /**
- * Command for changing order status
+ * @see ChangeOrderStatusCommandHandler
  */
 final readonly class ChangeOrderStatusCommand
 {
