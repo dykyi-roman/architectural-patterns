@@ -6,12 +6,13 @@ namespace OrderContext\Presentation\Api\Action;
 
 use OrderContext\Application\Service\OrderApplicationService;
 use OrderContext\Application\UseCases\GetOrderHistory\Dto\OrderHistoryDto;
+use OrderContext\Application\UseCases\GetOrderHistory\Exception\HistoryNotFoundException;
 use OrderContext\Application\UseCases\GetOrderHistory\Query\GetOrderHistoryQuery;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\Presentation\Api\Response\GetOrderHistoryResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
-readonly class GetOrderHistoryAction
+final readonly class GetOrderHistoryAction
 {
     public function __construct(
         private OrderApplicationService $applicationService,
@@ -21,10 +22,14 @@ readonly class GetOrderHistoryAction
     #[Route('/api/orders/{orderId}/history', methods: ['GET'])]
     public function __invoke(string $orderId): GetOrderHistoryResponse
     {
-        /** @var OrderHistoryDto $response */
-        $response = $this->applicationService->query(
-            new GetOrderHistoryQuery(OrderId::fromString($orderId)),
-        );
+        try {
+            /** @var OrderHistoryDto $response */
+            $response = $this->applicationService->query(
+                new GetOrderHistoryQuery(OrderId::fromString($orderId)),
+            );
+        } catch (HistoryNotFoundException) {
+            return new GetOrderHistoryResponse([]);
+        }
 
         return new GetOrderHistoryResponse($response->jsonSerialize());
     }

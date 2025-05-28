@@ -32,12 +32,15 @@ final readonly class GetOrderHistoryQueryHandler
 
         return new OrderHistoryDto(
             $query->orderId,
-            array_map(fn(DomainEventInterface $event) => new EventDto(
-                $event->getEventId(),
-                $event->getOccurredOn(),
-                $event->getEventName(),
-                $event->jsonSerialize(),
-            ), $events)
+            array_map(
+                static fn(DomainEventInterface $event) => new EventDto(
+                    $event->getEventId(),
+                    $event->getOccurredOn(),
+                    $event->getEventName(),
+                    $event->jsonSerialize(),
+                ),
+                $events,
+            )
         );
     }
 }

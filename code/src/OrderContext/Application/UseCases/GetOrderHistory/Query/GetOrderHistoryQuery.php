@@ -5,7 +5,7 @@ namespace OrderContext\Application\UseCases\GetOrderHistory\Query;
 use OrderContext\DomainModel\ValueObject\OrderId;
 
 /**
- * @throw GetOrderHistoryQueryHandler
+ * @see GetOrderHistoryQueryHandler
  */
 readonly class GetOrderHistoryQuery
 {

@@ -44,7 +44,7 @@ final readonly class OrderApplicationService
             throw new ApplicationException(
                 get_class($query),
                 $exception->getErrorCode(),
-                'Command execution failed',
+                'Query execution failed',
                 $exception->context,
                 $exception,
             );
@@ -54,7 +54,7 @@ final readonly class OrderApplicationService
             throw new ApplicationException(
                 get_class($query),
                 GeneralErrorCode::UNEXPECTED_ERROR,
-                'Command execution failed',
+                'Query execution failed',
                 [],
                 $exception,
             );
