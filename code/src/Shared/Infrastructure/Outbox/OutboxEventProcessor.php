@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\Infrastructure\Outbox;
+namespace Shared\Infrastructure\Outbox;
 
-use Psr\Log\LoggerInterface;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\LockInterface;
 

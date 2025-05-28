@@ -8,7 +8,8 @@ use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Entity\OrderItem;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
-use OrderContext\Infrastructure\Outbox\OutboxPublisherInterface;
+use Shared\DomainModel\Service\OutboxPublisherInterface;
+use Shared\DomainModel\Service\TransactionServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Uid\Uuid;
 
@@ -16,44 +17,35 @@ final readonly class CreateOrderCommandHandler
 {
     public function __construct(
         private OrderWriteModelRepositoryInterface $orderRepository,
-        private OutboxPublisherInterface $outboxPublisher
+        private OutboxPublisherInterface $outboxPublisher,
+        private TransactionServiceInterface $transactionService
     ) {
     }
 
     /**
      * @throws \InvalidArgumentException When command is not valid
+     * @throws \DomainException When order cannot be created
      * @throws \RuntimeException When order cannot be saved or event cannot be published
      */
     #[AsMessageHandler(bus: 'command.bus')]
     public function __invoke(CreateOrderCommand $command): void
     {
-        // Create new order
-        $order = Order::create($command->getCustomerId());
-        
-        // Add order items
-        foreach ($command->getItems() as $item) {
-            $orderItem = OrderItem::create(
-                $item['product_id'],
-                $item['quantity'],
-                $item['price']
-            );
+        $this->transactionService->execute(function() use ($command): void {
+            $order = Order::create($command->orderId, $command->customerId, ...$command->getOrderItems());
+
+            $this->orderRepository->save($order);
             
-            $order->addItem($orderItem);
-        }
-        
-        // Save order to repository
-        $this->orderRepository->save($order);
-        
-        $this->outboxPublisher->publish(
-            new OrderCreatedEvent(
-                Uuid::v4()->toRfc4122(),
-                new \DateTimeImmutable(),
-                $order->getId(),
-                $order->getCustomerId(),
-                $order->getTotalAmount(),
-                $this->prepareItemsForEvent($order->getItems())
-            ),
-        );
+            $this->outboxPublisher->publish(
+                new OrderCreatedEvent(
+                    Uuid::v4()->toRfc4122(),
+                    new \DateTimeImmutable(),
+                    $order->getId(),
+                    $order->getCustomerId(),
+                    $order->calculateTotalAmount(),
+                    $this->prepareItemsForEvent($order->getItems()),
+                ),
+            );
+        });
     }
     
     /**

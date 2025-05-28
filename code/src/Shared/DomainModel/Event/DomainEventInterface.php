@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\DomainModel\Event;
+namespace Shared\DomainModel\Event;
 
 interface DomainEventInterface extends \JsonSerializable
 {

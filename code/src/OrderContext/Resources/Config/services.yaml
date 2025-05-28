@@ -60,11 +60,11 @@ services:
         tags:
             - { name: 'messenger.message_handler', bus: 'query.bus' }
 
-    # Console commands for working with Outbox
-    OrderContext\Presentation\Console\ProcessOutboxEventsCommand:
-        tags: [ 'console.command' ]
-
     # Services
     OrderContext\Application\Service\OrderApplicationService: ~
 
-
+    # Transaction Service
+    OrderContext\Infrastructure\Transaction\TransactionServiceInterface:
+        class: OrderContext\Infrastructure\Transaction\DoctrineTransactionService
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'

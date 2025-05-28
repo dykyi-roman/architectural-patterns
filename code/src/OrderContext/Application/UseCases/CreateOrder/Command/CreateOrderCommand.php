@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace OrderContext\Application\UseCases\CreateOrder\Command;
 
+use OrderContext\DomainModel\Entity\Order;
+use OrderContext\DomainModel\Entity\OrderItem;
 use OrderContext\DomainModel\ValueObject\CustomerId;
+use OrderContext\DomainModel\ValueObject\OrderId;
 
 /**
  * @see \OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommandHandler
@@ -12,29 +15,20 @@ use OrderContext\DomainModel\ValueObject\CustomerId;
 final readonly class CreateOrderCommand
 {
     /**
-     * @param array<array{product_id: mixed, quantity: int, price: mixed}> $items Order items
+     * @var \OrderContext\DomainModel\Entity\OrderItem[]
      */
+    private array $orderItems;
+
     public function __construct(
-        private CustomerId $customerId,
-        private array $items
+        public OrderId $orderId,
+        public CustomerId $customerId,
+        OrderItem ...$orderItems,
     ) {
+        $this->orderItems = $orderItems;
     }
 
-    /**
-     * Returns customer identifier
-     */
-    public function getCustomerId(): CustomerId
+    public function getOrderItems(): array
     {
-        return $this->customerId;
-    }
-
-    /**
-     * Returns order items
-     *
-     * @return array<array{product_id: mixed, quantity: int, price: mixed}>
-     */
-    public function getItems(): array
-    {
-        return $this->items;
+        return $this->orderItems;
     }
 }

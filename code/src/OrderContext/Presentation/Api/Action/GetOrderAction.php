@@ -25,17 +25,11 @@ final class GetOrderAction extends AbstractController
     {
         $query = new GetOrderQuery(OrderId::fromString($orderId));
 
-        // Execute query via application service
         $orderData = $this->applicationService->query($query);
-
         if ($orderData === null) {
-            return new JsonResponse(['error' => 'Заказ не найден'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Order not foud'], Response::HTTP_NOT_FOUND);
         }
 
-        // Transform read model data to response DTO
-        $orderResponse = OrderResponse::fromReadModel($orderData);
-
-        // Return order data
-        return new JsonResponse($orderResponse, Response::HTTP_OK);
+        return new JsonResponse(OrderResponse::fromReadModel($orderData), Response::HTTP_OK);
     }
 }

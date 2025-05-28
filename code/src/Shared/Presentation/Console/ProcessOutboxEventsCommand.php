@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\Presentation\Console;
+namespace Shared\Presentation\Console;
 
-use OrderContext\Infrastructure\Outbox\OutboxEventProcessor;
 use Psr\Log\LoggerInterface;
+use Shared\Infrastructure\Outbox\OutboxEventProcessor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

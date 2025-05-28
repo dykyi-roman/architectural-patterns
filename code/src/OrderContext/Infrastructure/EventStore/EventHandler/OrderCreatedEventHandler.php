@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\EventStore\EventHandler;
 
-use OrderContext\DomainModel\Event\DomainEventInterface;
 use Psr\Log\LoggerInterface;
+use Shared\DomainModel\Event\DomainEventInterface;
 
 final readonly class OrderCreatedEventHandler implements EventHandlerInterface
 {

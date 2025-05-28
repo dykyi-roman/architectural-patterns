@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace OrderContext\Application\Service;
 
 use Psr\Log\LoggerInterface;
-use Shared\Domain\MessageBusInterface;
+use Shared\Application\Exception\ApplicationException;
+use Shared\Application\Exception\GeneralErrorCode;
+use Shared\DomainModel\Exception\DomainException;
+use Shared\DomainModel\Service\MessageBusInterface;
 use Throwable;
 
 final readonly class OrderApplicationService
@@ -17,31 +20,44 @@ final readonly class OrderApplicationService
     ) {
     }
 
-    /**
-     * @throws \Throwable
-     */
     public function execute(object $command): void
     {
         try {
             $this->commandBus->dispatch($command);
+        } catch (DomainException $exception) {
+            $this->logger->error($exception->getMessage(), $exception->jsonSerialize());
         } catch (Throwable $exception) {
             $this->logger->error($exception->getMessage());
-
-            throw $exception;
         }
     }
 
     /**
-     * @throws \Throwable
+     * @throws \Shared\Application\Exception\ApplicationException
      */
     public function query(object $query): mixed
     {
         try {
             return $this->queryBus->dispatch($query);
+        } catch (DomainException $exception) {
+            $this->logger->error($exception->getMessage());
+
+            throw new ApplicationException(
+                get_class($query),
+                $exception->getErrorCode(),
+                'Command execution failed',
+                $exception->context,
+                $exception,
+            );
         } catch (Throwable $exception) {
             $this->logger->error($exception->getMessage());
 
-            throw $exception;
+            throw new ApplicationException(
+                get_class($query),
+                GeneralErrorCode::UNEXPECTED_ERROR,
+                'Command execution failed',
+                [],
+                $exception,
+            );
         }
     }
 }

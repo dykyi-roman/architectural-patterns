@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Domain;
+namespace Shared\DomainModel\Service;
 
 interface MessageBusInterface
 {

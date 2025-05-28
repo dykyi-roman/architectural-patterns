@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\MessageBus;
 
-use Shared\Domain\MessageBusInterface;
+use Shared\DomainModel\Service\MessageBusInterface;
 use Symfony\Component\Messenger\MessageBusInterface as SymfonyMessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 

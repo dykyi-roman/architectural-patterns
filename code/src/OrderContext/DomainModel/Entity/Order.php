@@ -7,13 +7,13 @@ namespace OrderContext\DomainModel\Entity;
 use DateTimeImmutable;
 use DomainException;
 use InvalidArgumentException;
-use OrderContext\DomainModel\Event\DomainEventInterface;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
 use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
+use Shared\DomainModel\Event\DomainEventInterface;
 
 /**
  * Агрегат заказа
@@ -23,7 +23,7 @@ final class Order
     /** @var array<OrderItem> */
     private array $items = [];
     
-    /** @var array<\OrderContext\DomainModel\Event\DomainEventInterface> */
+    /** @var array<\Shared\DomainModel\Event\DomainEventInterface> */
     private array $domainEvents = [];
 
     /**
@@ -56,7 +56,7 @@ final class Order
      * @return self
      * @throws InvalidArgumentException Если список элементов пуст
      */
-    public static function create(OrderId $orderId, CustomerId $customerId, array $items): self
+    public static function create(OrderId $orderId, CustomerId $customerId, OrderItem ...$items): self
     {
         if (empty($items)) {
             throw new InvalidArgumentException('Заказ должен содержать хотя бы один товар');
@@ -70,22 +70,13 @@ final class Order
             $now
         );
 
-        foreach ($items as $item) {
-            if (!$item instanceof OrderItem) {
-                throw new InvalidArgumentException('Все элементы должны быть экземплярами OrderItem');
-            }
-            $order->items[] = $item;
-        }
-
-        // Генерация события создания заказа
-        $itemsData = array_map(fn(OrderItem $item) => $item->toArray(), $items);
         $order->recordEvent(new OrderCreatedEvent(
             uuid_create(),
             $now,
             $orderId,
             $customerId,
             $order->calculateTotalAmount(),
-            $itemsData
+            array_map(fn(OrderItem $item) => $item->toArray(), $items),
         ));
 
         return $order;

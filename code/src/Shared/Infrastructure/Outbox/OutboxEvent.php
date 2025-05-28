@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\Infrastructure\Outbox;
+namespace Shared\Infrastructure\Outbox;
 
 use DateTimeImmutable;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\EventStore\EventHandler;
 
-use OrderContext\DomainModel\Event\DomainEventInterface;
+use Shared\DomainModel\Event\DomainEventInterface;
 
 /**
  * Интерфейс для обработчиков доменных событий

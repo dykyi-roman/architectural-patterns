@@ -7,31 +7,31 @@ namespace OrderContext\Presentation\Api\Action;
 use OrderContext\Application\Service\OrderApplicationService;
 use OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommand;
 use OrderContext\DomainModel\ValueObject\CustomerId;
+use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\Presentation\Api\Request\CreateOrderRequest;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
+use OrderContext\Presentation\Api\Response\CreateOrderResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class CreateOrderAction extends AbstractController
+final readonly class CreateOrderAction
 {
     public function __construct(
-        private readonly OrderApplicationService $applicationService
+        private OrderApplicationService $applicationService,
     ) {
     }
 
     #[Route('/api/orders', methods: ['POST'])]
     public function __invoke(
         #[MapRequestPayload] CreateOrderRequest $request,
-    ): JsonResponse {
+    ): CreateOrderResponse {
         $this->applicationService->execute(
             new CreateOrderCommand(
+                OrderId::generate(),
                 CustomerId::fromString($request->customerId),
                 $request->getItems(),
             ),
         );
 
-        return new JsonResponse(['message' => 'Заказ успешно создан'], Response::HTTP_CREATED);
+        return new CreateOrderResponse();
     }
 }

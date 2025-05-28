@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\Infrastructure\Outbox;
+namespace Shared\Infrastructure\Outbox;
 
-use OrderContext\DomainModel\Event\DomainEventInterface;
 use RuntimeException;
+use Shared\DomainModel\Event\DomainEventInterface;
+use Shared\DomainModel\Service\OutboxPublisherInterface;
+use Throwable;
 
 final readonly class OutboxPublisher implements OutboxPublisherInterface
 {
@@ -33,7 +35,7 @@ final readonly class OutboxPublisher implements OutboxPublisherInterface
             );
 
             $this->outboxRepository->save($outboxEvent);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new RuntimeException(
                 sprintf('Error publishing event to outbox: %s', $exception->getMessage()),
                 0,

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OrderContext\DomainModel\Event;
 
+use Shared\DomainModel\Event\DomainEventInterface;
+
 abstract readonly class AbstractDomainEvent implements DomainEventInterface
 {
     /**
