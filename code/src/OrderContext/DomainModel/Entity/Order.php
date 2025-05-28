@@ -16,7 +16,7 @@ use OrderContext\DomainModel\ValueObject\OrderStatus;
 use Shared\DomainModel\Event\DomainEventInterface;
 
 /**
- * Агрегат заказа
+ * Order Aggregate
  */
 final class Order
 {
@@ -76,7 +76,7 @@ final class Order
             $orderId,
             $customerId,
             $order->calculateTotalAmount(),
-            array_map(fn(OrderItem $item) => $item->toArray(), $items),
+            array_map(fn(OrderItem $item) => $item->jsonSerialize(), $items),
         ));
 
         return $order;
@@ -235,23 +235,6 @@ final class Order
     public function getItems(): array
     {
         return $this->items;
-    }
-
-    /**
-     * Сериализует заказ в массив
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id->toString(),
-            'customer_id' => $this->customerId->toString(),
-            'status' => $this->status->value,
-            'items' => array_map(fn(OrderItem $item) => $item->toArray(), $this->items),
-            'created_at' => $this->createdAt->format(DateTimeImmutable::ATOM),
-            'updated_at' => $this->updatedAt?->format(DateTimeImmutable::ATOM),
-        ];
     }
 
     /**

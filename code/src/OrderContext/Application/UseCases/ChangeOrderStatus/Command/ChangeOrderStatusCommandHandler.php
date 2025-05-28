@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OrderContext\Application\UseCases\ChangeOrderStatus\Command;
 
 use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
+use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use Shared\DomainModel\Service\OutboxPublisherInterface;
 use Shared\DomainModel\Service\TransactionServiceInterface;
@@ -24,6 +25,7 @@ final readonly class ChangeOrderStatusCommandHandler
      * @throws \InvalidArgumentException When command is not valid
      * @throws \DomainException When order not found or status change is invalid
      * @throws \RuntimeException When order cannot be saved or event cannot be published
+     * @throws \OrderContext\DomainModel\Exception\SaveOrderException
      */
     #[AsMessageHandler(bus: 'command.bus')]
     public function __invoke(ChangeOrderStatusCommand $command): void
@@ -38,10 +40,7 @@ final readonly class ChangeOrderStatusCommandHandler
             // Get current status before change
             $previousStatus = $order->getStatus();
 
-            // Change order status
             $order->changeStatus($command->getNewStatus());
-            
-            // Save order in repository
             $this->orderRepository->save($order);
             
             // Create and publish domain event via outbox pattern

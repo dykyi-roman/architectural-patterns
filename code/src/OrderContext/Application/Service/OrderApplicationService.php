@@ -6,7 +6,7 @@ namespace OrderContext\Application\Service;
 
 use Psr\Log\LoggerInterface;
 use Shared\Application\Exception\ApplicationException;
-use Shared\Application\Exception\GeneralErrorCode;
+use Shared\DomainModel\Enum\GeneralErrorCode;
 use Shared\DomainModel\Exception\DomainException;
 use Shared\DomainModel\Service\MessageBusInterface;
 use Throwable;

@@ -7,7 +7,9 @@ namespace OrderContext\Infrastructure\Persistence\Doctrine\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use OrderContext\DomainModel\Entity\Order;
+use OrderContext\DomainModel\Enum\OrderErrorCodes;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
+use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use RuntimeException;
@@ -23,13 +25,16 @@ final readonly class DoctrineOrderRepository implements OrderWriteModelRepositor
         $this->repository = $this->entityManager->getRepository(Order::class);
     }
 
+    /**
+     * @throw SaveOrderException
+     */
     public function save(Order $order): void
     {
         try {
             $this->entityManager->persist($order);
             $this->entityManager->flush();
         } catch (\Throwable $exception) {
-            throw new RuntimeException("Ошибка при сохранении заказа: {$exception->getMessage()}", 0, $exception);
+            throw new SaveOrderException($exception->getMessage());
         }
     }
 

@@ -7,11 +7,12 @@ namespace OrderContext\DomainModel\Entity;
 use InvalidArgumentException;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\ProductId;
+use PHPUnit\Util\Json;
 
 /**
  * Сущность элемента заказа
  */
-final readonly class OrderItem
+final readonly class OrderItem implements \JsonSerializable
 {
     /**
      * @param ProductId $productId Идентификатор продукта
@@ -88,7 +89,7 @@ final readonly class OrderItem
      *
      * @return array<string, mixed>
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
         return [
             'product_id' => $this->productId->toString(),

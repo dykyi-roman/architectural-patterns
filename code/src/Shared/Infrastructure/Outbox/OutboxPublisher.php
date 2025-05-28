@@ -25,7 +25,7 @@ final readonly class OutboxPublisher implements OutboxPublisherInterface
     public function publish(DomainEventInterface $event): void
     {
         try {
-            $payload = json_encode($event->toArray(), JSON_THROW_ON_ERROR);
+            $payload = json_encode($event->jsonSerialize(), JSON_THROW_ON_ERROR);
 
             $outboxEvent = OutboxEvent::create(
                 $event->getEventId(),

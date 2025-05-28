@@ -7,6 +7,7 @@ namespace OrderContext\Application\UseCases\CreateOrder\Command;
 use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Entity\OrderItem;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
+use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use Shared\DomainModel\Service\OutboxPublisherInterface;
 use Shared\DomainModel\Service\TransactionServiceInterface;
@@ -23,9 +24,9 @@ final readonly class CreateOrderCommandHandler
     }
 
     /**
-     * @throws \InvalidArgumentException When command is not valid
-     * @throws \DomainException When order cannot be created
-     * @throws \RuntimeException When order cannot be saved or event cannot be published
+     * @throws SaveOrderException When order cannot be saved or event cannot be published
+     * @throws \RuntimeException When order event cannot be published
+     * @throws \Throwable When transaction fails
      */
     #[AsMessageHandler(bus: 'command.bus')]
     public function __invoke(CreateOrderCommand $command): void
@@ -42,31 +43,9 @@ final readonly class CreateOrderCommandHandler
                     $order->getId(),
                     $order->getCustomerId(),
                     $order->calculateTotalAmount(),
-                    $this->prepareItemsForEvent($order->getItems()),
+                    array_map(fn(OrderItem $item) => $item->jsonSerialize(), $order->getItems()),
                 ),
             );
         });
-    }
-    
-    /**
-     * Подготавливает элементы заказа для события
-     * 
-     * @param array<OrderItem> $items
-     * @return array<array{product_id: string, quantity: int, price: array{amount: int, currency: string}}>
-     */
-    private function prepareItemsForEvent(array $items): array
-    {
-        $result = [];
-        foreach ($items as $item) {
-            $result[] = [
-                'product_id' => $item->getProductId()->toString(),
-                'quantity' => $item->getQuantity(),
-                'price' => [
-                    'amount' => $item->getPrice()->getAmount(),
-                    'currency' => $item->getPrice()->getCurrency(),
-                ],
-            ];
-        }
-        return $result;
     }
 }

@@ -11,6 +11,7 @@ use OrderContext\DomainModel\Model\Event\OrderCreatedEvent;
 use OrderContext\DomainModel\Model\Event\OrderStatusChangedEvent;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use RuntimeException;
+use Shared\DomainModel\Event\DomainEventInterface;
 
 /**
  * Реализация хранилища событий на PostgreSQL
@@ -28,7 +29,7 @@ final readonly class PostgreSqlEventStore implements EventStoreInterface
     /**
      * @inheritDoc
      */
-    public function append(DomainEvent $event): void
+    public function append(DomainEventInterface $event): void
     {
         try {
             $this->connection->insert('event_store', [
@@ -36,7 +37,7 @@ final readonly class PostgreSqlEventStore implements EventStoreInterface
                 'occurred_on' => $event->getOccurredOn()->format('Y-m-d H:i:s.u'),
                 'event_type' => $event->getEventName(),
                 'aggregate_id' => $event->getAggregateId(),
-                'event_data' => json_encode($event->toArray(), JSON_THROW_ON_ERROR),
+                'event_data' => json_encode($event->jsonSerialize(), JSON_THROW_ON_ERROR),
             ]);
         } catch (Exception $e) {
             throw new RuntimeException("Ошибка при сохранении события: {$e->getMessage()}", 0, $e);

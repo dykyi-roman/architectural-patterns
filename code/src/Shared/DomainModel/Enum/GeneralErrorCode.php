@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\Exception;
+namespace Shared\DomainModel\Enum;
 
 enum GeneralErrorCode: int
 {

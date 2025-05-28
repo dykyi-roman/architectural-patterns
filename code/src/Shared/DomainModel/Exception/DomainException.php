@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\DomainModel\Exception;
 
-use function DEPTRAC_INTERNAL\Symfony\Component\DependencyInjection\Loader\Configurator\abstract_arg;
-
 /**
  * @template T of \BackedEnum
  */

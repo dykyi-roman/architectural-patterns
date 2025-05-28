@@ -6,16 +6,13 @@ namespace OrderContext\DomainModel\Repository;
 
 use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
+use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\ValueObject\OrderId;
 
 interface OrderWriteModelRepositoryInterface
 {
     /**
-     * Сохраняет заказ
-     *
-     * @param Order $order Заказ для сохранения
-     * @return void
-     * @throws \RuntimeException При ошибке сохранения
+     * @throws SaveOrderException
      */
     public function save(Order $order): void;
 

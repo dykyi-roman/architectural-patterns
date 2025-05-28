@@ -59,9 +59,9 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
-        return array_merge(parent::toArray(), [
+        return array_merge(parent::jsonSerialize(), [
             'order_id' => $this->orderId->toString(),
             'previous_status' => $this->previousStatus->value,
             'new_status' => $this->newStatus->value,
