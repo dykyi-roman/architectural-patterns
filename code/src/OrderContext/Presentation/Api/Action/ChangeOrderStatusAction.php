@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/api/v1', name: 'api_orders_')]
 final class ChangeOrderStatusAction extends AbstractController
 {
     public function __construct(
@@ -22,12 +23,12 @@ final class ChangeOrderStatusAction extends AbstractController
     ) {
     }
 
-    #[Route('/api/orders/{orderId}/status', methods: ['PATCH'])]
+    #[Route('/orders/{orderId}/status', name: 'change_status', methods: ['PATCH'])]
     public function __invoke(
         string $orderId,
         #[MapRequestPayload] ChangeOrderStatusRequest $request
     ): JsonResponse {
-        $this->applicationService->execute(
+        $this->applicationService->command(
             new ChangeOrderStatusCommand(
                 OrderId::fromString($orderId),
                 OrderStatus::from($request->status)

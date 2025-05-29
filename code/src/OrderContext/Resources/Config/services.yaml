@@ -10,11 +10,14 @@ services:
         resource: '../../'
         exclude:
             - '../../Resources/'
-            - '../../Presentation/Api/{Request, Response}/'
-            - '../../Application/**/*{Command,Query}.php'
-            - '../../DomainModel/{Dto,Event,Model,ValueObject,Exception}/'
+            - '../../Presentation/Api/{Request,Response}/'
+            - '../../Presentation/Web/{Request,Response}/'
+            - '../../Presentation/Console/{Input,Output}/'
+            - '../../Application/**/*Command.php'
+            - '../../Application/**/*Query.php'
+            - '../../DomainModel/*/{Dto,Event,Entity,Exception,ValueObject}/'
             - '../../**/Tests/'
-        tags: ['controller.service_arguments']
+        tags: [ 'controller.service_arguments' ]
 
     # Repositories
     OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface:

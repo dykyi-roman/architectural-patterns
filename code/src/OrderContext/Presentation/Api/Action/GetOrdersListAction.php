@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/api/v1', name: 'api_orders_')]
 final class GetOrdersListAction extends AbstractController
 {
     public function __construct(
@@ -20,7 +21,7 @@ final class GetOrdersListAction extends AbstractController
     ) {
     }
 
-    #[Route('/api/orders', methods: ['GET'])]
+    #[Route('/orders', name: 'order_list', methods: ['GET'])]
     public function __invoke(Request $request): JsonResponse
     {
         // Get query parameters

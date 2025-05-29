@@ -20,7 +20,7 @@ final readonly class OrderApplicationService
     ) {
     }
 
-    public function execute(object $command): void
+    public function command(object $command): void
     {
         try {
             $this->commandBus->dispatch($command);
@@ -39,8 +39,6 @@ final readonly class OrderApplicationService
         try {
             return $this->queryBus->dispatch($query);
         } catch (DomainException $exception) {
-            $this->logger->error($exception->getMessage());
-
             throw new ApplicationException(
                 get_class($query),
                 $exception->getErrorCode(),
@@ -49,8 +47,6 @@ final readonly class OrderApplicationService
                 $exception,
             );
         } catch (Throwable $exception) {
-            $this->logger->error($exception->getMessage());
-
             throw new ApplicationException(
                 get_class($query),
                 GeneralErrorCode::UNEXPECTED_ERROR,

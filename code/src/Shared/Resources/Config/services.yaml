@@ -15,6 +15,12 @@ services:
             - '../../**/Tests/'
         tags: ['controller.service_arguments']
 
+    # Global Assert Validation Error Handler
+    Shared\Infrastructure\ErrorHandler\GlobalErrorHandler:
+        tags:
+            - { name: kernel.event_subscriber }
+
+    # Responder
     Shared\Presentation\Responder\JsonResponder:
         tags:
             - { name: kernel.event_subscriber }

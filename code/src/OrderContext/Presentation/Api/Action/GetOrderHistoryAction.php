@@ -12,6 +12,7 @@ use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\Presentation\Api\Response\GetOrderHistoryResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/api/v1', name: 'api_orders_')]
 final readonly class GetOrderHistoryAction
 {
     public function __construct(
@@ -19,7 +20,7 @@ final readonly class GetOrderHistoryAction
     ) {
     }
 
-    #[Route('/api/orders/{orderId}/history', methods: ['GET'])]
+    #[Route('/orders/{orderId}/history', name: 'order_history', methods: ['GET'])]
     public function __invoke(string $orderId): GetOrderHistoryResponse
     {
         try {

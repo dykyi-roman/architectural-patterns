@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Infrastructure\ErrorHandler;
 
 use Psr\Log\LoggerInterface;
+use Shared\Application\Exception\ApplicationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -69,6 +70,7 @@ final readonly class GlobalErrorHandler implements EventSubscriberInterface
      *         type: string,
      *         message: string,
      *         code: string,
+     *         useCase?: string,
      *         violations?: array<array{property: string, message: string, code: string|null}>
      *     }
      * }
@@ -87,6 +89,11 @@ final readonly class GlobalErrorHandler implements EventSubscriberInterface
         // Add validation errors if present
         if ($exception instanceof ValidationFailedException) {
             $errorResponse['error']['violations'] = $this->getValidationErrors($exception);
+        }
+
+        // Add use case name if present
+        if ($exception instanceof ApplicationException) {
+            $errorResponse['error']['useCase'] = $exception->useCaseName;
         }
 
         return $errorResponse;

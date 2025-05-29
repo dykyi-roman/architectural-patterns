@@ -13,10 +13,6 @@ class ApplicationException extends \RuntimeException
      * @var non-empty-string
      */
     public string $useCaseName;
-    /**
-     * @var non-empty-string
-     */
-    public string $contextName;
 
     /**
      * @param non-empty-string $classPath
@@ -27,7 +23,7 @@ class ApplicationException extends \RuntimeException
         public readonly \BackedEnum $errorCode,
         public $message,
         public readonly array $details = [],
-        \Throwable $previous = null,
+        ?\Throwable $previous = null,
     ) {
         $namespaceParts = explode('\\', $classPath);
         $useCasesIndex = array_search('UseCases', $namespaceParts, true);
@@ -36,7 +32,6 @@ class ApplicationException extends \RuntimeException
         }
 
         $this->useCaseName = $namespaceParts[$useCasesIndex + 1];
-        $this->contextName = $namespaceParts[0];
 
         parent::__construct($message, 0, $previous);
     }

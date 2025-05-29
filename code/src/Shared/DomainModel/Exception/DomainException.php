@@ -20,7 +20,7 @@ abstract class DomainException extends \DomainException implements \JsonSerializ
                 return $this->context;
             }
         },
-        \Throwable $previous = null
+        ?\Throwable $previous = null
     ) {
         parent::__construct($message, 0, $previous);
     }

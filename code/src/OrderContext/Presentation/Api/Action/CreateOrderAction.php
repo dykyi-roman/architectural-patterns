@@ -13,6 +13,7 @@ use OrderContext\Presentation\Api\Response\CreateOrderResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/api/v1', name: 'api_orders_')]
 final readonly class CreateOrderAction
 {
     public function __construct(
@@ -20,11 +21,11 @@ final readonly class CreateOrderAction
     ) {
     }
 
-    #[Route('/api/orders', methods: ['POST'])]
+    #[Route('/orders', name: 'create_order', methods: ['POST'])]
     public function __invoke(
         #[MapRequestPayload] CreateOrderRequest $request,
     ): CreateOrderResponse {
-        $this->applicationService->execute(
+        $this->applicationService->command(
             new CreateOrderCommand(
                 OrderId::generate(),
                 CustomerId::fromString($request->customerId),
