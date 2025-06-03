@@ -10,10 +10,41 @@ services:
         resource: '../../'
         exclude:
             - '../../Resources/'
-            - '../../DomainModel/Model/'
-            - '../../Tests/'
+            - '../../Presentation/Api/{Request,Response}/'
+            - '../../Presentation/Web/{Request,Response}/'
+            - '../../Presentation/Console/{Input,Output}/'
+            - '../../Application/**/*Command.php'
+            - '../../Application/**/*Query.php'
+            - '../../Application/{Exception}/'
+            - '../../Infrastructure/Outbox/Command/OutboxMessageEnvelope.php'
+            - '../../Infrastructure/RateLimiting/{Configuration,Exception,Attribute,Dto}/'
+            - '../../Infrastructure/RateLimiting/RateLimiter.php'
+            - '../../Infrastructure/Outbox/{ValueObject}/'
+            - '../../DomainModel/{Dto,Event,Enum,Entity,Specification,Exception,ValueObject}/'
             - '../../**/Tests/'
         tags: ['controller.service_arguments']
+
+    query.bus.adapter:
+        class: Shared\Infrastructure\MessageBus\SymfonyMessageBus
+        arguments:
+            $messageBus: '@query.bus'
+
+    event.bus.adapter:
+        class: Shared\Infrastructure\MessageBus\SymfonyMessageBus
+        arguments:
+            $messageBus: '@event.bus'
+
+    command.bus.adapter:
+        class: Shared\Infrastructure\MessageBus\SymfonyMessageBus
+        arguments:
+            $messageBus: '@command.bus'
+
+    Shared\Infrastructure\TransactionDoctrineTransactionService:
+        arguments:
+            - '%doctrine.orm.default_entity_manager%'
+
+    OrderContext\Infrastructure\Transaction\TransactionServiceInterface:
+        alias: Shared\Infrastructure\TransactionDoctrineTransactionService
 
     # Global Assert Validation Error Handler
     Shared\Infrastructure\ErrorHandler\GlobalErrorHandler:
@@ -28,3 +59,24 @@ services:
     Shared\Presentation\Responder\HtmlResponder:
         tags:
             - { name: kernel.event_subscriber }
+
+    # Outbox
+    Shared\Infrastructure\Outbox\Repository\OutboxEventRepository:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+
+    Shared\Infrastructure\Outbox\Service\OutboxEventProcessor:
+        arguments:
+            $messageBus: '@event.bus.adapter'
+
+    Shared\Infrastructure\Outbox\Command\OutboxMessageEnvelopeHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'event.bus' }
+
+    # Event Store
+    Shared\Infrastructure\EventStore\Repository\DoctrineEventStore:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+
+    Shared\Infrastructure\EventStore\EventStoreInterface:
+        class: OrderContext\Infrastructure\EventStore\DoctrineEventStore

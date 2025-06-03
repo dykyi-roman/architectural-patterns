@@ -15,6 +15,7 @@
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.3",
+        "elasticsearch/elasticsearch": "*",
         "php-amqplib/php-amqplib": "*",
         "psr/http-client": "^1.0",
         "psr/log": "^3.0",

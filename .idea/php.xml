@@ -167,6 +167,14 @@
       <path value="$PROJECT_DIR$/code/vendor/paragonie/constant_time_encoding" />
       <path value="$PROJECT_DIR$/code/vendor/phpseclib/phpseclib" />
       <path value="$PROJECT_DIR$/code/vendor/php-amqplib/php-amqplib" />
+      <path value="$PROJECT_DIR$/code/vendor/nyholm/psr7" />
+      <path value="$PROJECT_DIR$/code/vendor/elastic/transport" />
+      <path value="$PROJECT_DIR$/code/vendor/open-telemetry/context" />
+      <path value="$PROJECT_DIR$/code/vendor/open-telemetry/api" />
+      <path value="$PROJECT_DIR$/code/vendor/elasticsearch/elasticsearch" />
+      <path value="$PROJECT_DIR$/code/vendor/php-http/promise" />
+      <path value="$PROJECT_DIR$/code/vendor/php-http/httplug" />
+      <path value="$PROJECT_DIR$/code/vendor/php-http/discovery" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />

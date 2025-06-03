@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shared\DomainModel\Service;
+namespace Shared\Infrastructure\Outbox\Publisher;
 
 use Shared\DomainModel\Event\DomainEventInterface;
 

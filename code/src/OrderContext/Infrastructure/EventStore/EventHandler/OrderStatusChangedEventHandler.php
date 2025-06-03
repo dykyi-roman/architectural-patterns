@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\EventStore\EventHandler;
 
-use OrderContext\DomainModel\Model\Event\DomainEvent;
-use OrderContext\DomainModel\Model\Event\OrderStatusChangedEvent;
+use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
+use OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository;
 use Psr\Log\LoggerInterface;
-use Repository\ElasticsearchOrderReadModelRepository;
+use Shared\DomainModel\Event\DomainEventInterface;
+use Shared\Infrastructure\EventStore\EventHandler\EventHandlerInterface;
 
-/**
- * Обработчик события изменения статуса заказа для обновления read-модели
- */
 final readonly class OrderStatusChangedEventHandler implements EventHandlerInterface
 {
     /**
-     * @param ElasticsearchOrderReadModelRepository $readModelRepository Репозиторий для чтения заказов
-     * @param LoggerInterface $logger Логгер
+     * @param ElasticsearchOrderReadModelRepository $readModelRepository
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private ElasticsearchOrderReadModelRepository $readModelRepository,
@@ -24,10 +22,7 @@ final readonly class OrderStatusChangedEventHandler implements EventHandlerInter
     ) {
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function handle(DomainEvent $event): void
+    public function handle(DomainEventInterface $event): void
     {
         if (!$event instanceof OrderStatusChangedEvent) {
             throw new \InvalidArgumentException(
@@ -72,10 +67,7 @@ final readonly class OrderStatusChangedEventHandler implements EventHandlerInter
         );
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function canHandle(DomainEvent $event): bool
+    public function canHandle(DomainEventInterface $event): bool
     {
         return $event instanceof OrderStatusChangedEvent;
     }

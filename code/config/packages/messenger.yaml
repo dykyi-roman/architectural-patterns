@@ -6,6 +6,7 @@ framework:
         # Defining message buses (CQRS)
         default_bus: command.bus
         buses:
+            event.bus: ~
             command.bus: ~
             query.bus: ~
             messenger.bus.default: ~
@@ -13,9 +14,9 @@ framework:
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
             # failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
-            async: '%env(MESSENGER_TRANSPORT_DSN)%'
-            sync: 'in-memory://default'
+             sync: 'sync://'
+#            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+#            sync: 'in-memory://default'
 
         routing:
             # queries

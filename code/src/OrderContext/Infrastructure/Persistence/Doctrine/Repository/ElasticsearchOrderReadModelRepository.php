@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\Persistence\Doctrine\Repository;
 
-use Elasticsearch\Client;
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
 use OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\OrderId;
@@ -37,19 +38,21 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 'id' => $orderId->toString(),
             ];
 
-            $response = $this->client->get($params);
+            $response = $this->client->get($params)->asArray();
             
             if (isset($response['found']) && $response['found']) {
                 return $response['_source'];
             }
             
             return null;
-        } catch (\Exception $e) {
-            // Если документ не найден, Elasticsearch выбрасывает исключение
-            if (strpos($e->getMessage(), '404 Not Found') !== false) {
+        } catch (ClientResponseException $e) {
+            // Если документ не найден, Elasticsearch выбрасывает исключение 404
+            if ($e->getCode() === 404) {
                 return null;
             }
             
+            throw new RuntimeException("Ошибка при поиске заказа в Elasticsearch: {$e->getMessage()}", 0, $e);
+        } catch (\Throwable $e) {
             throw new RuntimeException("Ошибка при поиске заказа в Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
@@ -78,10 +81,10 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 ],
             ];
 
-            $response = $this->client->search($params);
+            $response = $this->client->search($params)->asArray();
             
             return $this->extractHitsFromResponse($response);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при поиске заказов клиента в Elasticsearch: {$e->getMessage()}",
                 0,
@@ -114,10 +117,10 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 ],
             ];
 
-            $response = $this->client->search($params);
+            $response = $this->client->search($params)->asArray();
             
             return $this->extractHitsFromResponse($response);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при поиске заказов по статусу в Elasticsearch: {$e->getMessage()}",
                 0,
@@ -141,10 +144,10 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 ],
             ];
 
-            $response = $this->client->count($params);
+            $response = $this->client->count($params)->asArray();
             
             return $response['count'] ?? 0;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при подсчете заказов в Elasticsearch: {$e->getMessage()}",
                 0,
@@ -175,10 +178,10 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 ],
             ];
 
-            $response = $this->client->search($params);
+            $response = $this->client->search($params)->asArray();
             
             return $this->extractHitsFromResponse($response);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при поиске всех заказов в Elasticsearch: {$e->getMessage()}",
                 0,
@@ -201,10 +204,11 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 'index' => $this->indexName,
                 'id' => $orderData['id'],
                 'body' => $orderData,
+                'refresh' => true, // Делаем документ сразу доступным для поиска
             ];
 
             $this->client->index($params);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при индексации заказа в Elasticsearch: {$e->getMessage()}",
                 0,
@@ -226,15 +230,22 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             $params = [
                 'index' => $this->indexName,
                 'id' => $orderId->toString(),
+                'refresh' => true,
             ];
 
             $this->client->delete($params);
-        } catch (\Exception $e) {
+        } catch (ClientResponseException $e) {
             // Игнорируем ошибку, если документ не найден
-            if (strpos($e->getMessage(), '404 Not Found') !== false) {
+            if ($e->getCode() === 404) {
                 return;
             }
             
+            throw new RuntimeException(
+                "Ошибка при удалении заказа из Elasticsearch: {$e->getMessage()}",
+                0,
+                $e
+            );
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при удалении заказа из Elasticsearch: {$e->getMessage()}",
                 0,
@@ -253,7 +264,7 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
     {
         try {
             // Проверяем, существует ли индекс
-            $indexExists = $this->client->indices()->exists(['index' => $this->indexName]);
+            $indexExists = $this->client->indices()->exists(['index' => $this->indexName])->asBool();
             
             if ($indexExists) {
                 return;
@@ -293,7 +304,7 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             ];
             
             $this->client->indices()->create($params);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new RuntimeException(
                 "Ошибка при создании индекса заказов в Elasticsearch: {$e->getMessage()}",
                 0,

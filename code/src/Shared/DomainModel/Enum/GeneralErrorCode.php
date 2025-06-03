@@ -6,6 +6,6 @@ namespace Shared\DomainModel\Enum;
 
 enum GeneralErrorCode: int
 {
-    case UNEXPECTED_ERROR = 1;
-    case UNKNOWN_ERROR = 2;
+    case UNEXPECTED_ERROR = 100;
+    case RATE_LIMIT_EXCEEDED = 101;
 }

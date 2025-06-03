@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\EventStore\EventHandler;
 
+use OrderContext\DomainModel\Event\OrderCreatedEvent;
+use OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository;
 use Psr\Log\LoggerInterface;
 use Shared\DomainModel\Event\DomainEventInterface;
+use Shared\Infrastructure\EventStore\EventHandler\EventHandlerInterface;
 
 final readonly class OrderCreatedEventHandler implements EventHandlerInterface
 {
     /**
-     * @param ElasticsearchOrderReadModelRepository\ $readModelRepository Репозиторий для чтения заказов
-     * @param LoggerInterface $logger Логгер
+     * @param ElasticsearchOrderReadModelRepository $readModelRepository
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private ElasticsearchOrderReadModelRepository $readModelRepository,
@@ -58,10 +61,7 @@ final readonly class OrderCreatedEventHandler implements EventHandlerInterface
         );
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function canHandle(DomainEvent $event): bool
+    public function canHandle(DomainEventInterface $event): bool
     {
         return $event instanceof OrderCreatedEvent;
     }

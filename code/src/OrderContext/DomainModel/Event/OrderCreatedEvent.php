@@ -85,4 +85,9 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
             $data['items']
         );
     }
+
+    public function getOccurredAt(): \DateTimeImmutable
+    {
+        return $this->getOccurredOn();
+    }
 }

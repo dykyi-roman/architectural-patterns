@@ -18,17 +18,11 @@ final readonly class ChangeOrderStatusCommand
     ) {
     }
 
-    /**
-     * Returns order identifier
-     */
     public function getOrderId(): OrderId
     {
         return $this->orderId;
     }
 
-    /**
-     * Returns new order status
-     */
     public function getNewStatus(): OrderStatus
     {
         return $this->newStatus;

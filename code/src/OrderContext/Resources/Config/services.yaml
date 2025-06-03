@@ -15,7 +15,9 @@ services:
             - '../../Presentation/Console/{Input,Output}/'
             - '../../Application/**/*Command.php'
             - '../../Application/**/*Query.php'
-            - '../../DomainModel/*/{Dto,Event,Entity,Exception,ValueObject}/'
+            - '../../Application/**/*Dto.php'
+            - '../../Application/**/*Exception.php'
+            - '../../DomainModel/{Dto,Event,Enum,Entity,Exception,ValueObject}/'
             - '../../**/Tests/'
         tags: [ 'controller.service_arguments' ]
 
@@ -27,8 +29,20 @@ services:
         arguments:
             $entityManager: '@doctrine.orm.default_entity_manager'
 
+    # Elasticsearch Factory
+    OrderContext\Infrastructure\Persistence\Doctrine\Factory\ElasticsearchClientFactory:
+        arguments:
+            $logger: '@logger'
+
+    # Elasticsearch Client
+    Elastic\Elasticsearch\Client:
+        factory: ['@OrderContext\Infrastructure\Persistence\Doctrine\Factory\ElasticsearchClientFactory', 'createClient']
+                
     OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface:
-        class: OrderContext\Infrastructure\Repository\ElasticsearchOrderReadModelRepository
+        class: OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository
+        arguments:
+            $client: '@Elastic\Elasticsearch\Client'
+            $indexName: '%env(default:orders:ELASTICSEARCH_ORDERS_INDEX)%'
 
     # Event Store
     OrderContext\Infrastructure\EventStore\EventStoreInterface:

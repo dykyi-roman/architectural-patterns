@@ -11,49 +11,41 @@ final class Version20250527092654 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create outbox_events table for Transactional Outbox Pattern';
+        return 'Create outbox_events table for current OutboxEvent class structure';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE outbox_events (
-            id UUID PRIMARY KEY,
-            event_id UUID NOT NULL UNIQUE,
+        // Drop old table if exists
+        $this->addSql('DROP TABLE IF EXISTS outbox_events');
+
+        // Create new table matching current OutboxEvent structure
+        $this->addSql(
+            'CREATE TABLE outbox_events (
+            id VARCHAR(36) PRIMARY KEY,
+            event_id VARCHAR(36) NOT NULL,
             event_type VARCHAR(255) NOT NULL,
-            aggregate_id UUID NOT NULL,
-            aggregate_type VARCHAR(255) NOT NULL,
-            event_data JSONB NOT NULL,
-            event_metadata JSONB,
-            status VARCHAR(50) NOT NULL DEFAULT \'pending\',
-            attempts INTEGER NOT NULL DEFAULT 0,
-            max_attempts INTEGER NOT NULL DEFAULT 3,
-            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+            aggregate_id VARCHAR(36) NOT NULL,
+            payload TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL,
             processed_at TIMESTAMP WITH TIME ZONE NULL,
-            failed_at TIMESTAMP WITH TIME ZONE NULL,
-            error_message TEXT NULL,
-            next_retry_at TIMESTAMP WITH TIME ZONE NULL
-        )');
+            is_processed BOOLEAN NOT NULL DEFAULT FALSE,
+            retry_count INTEGER NOT NULL DEFAULT 0,
+            error TEXT NULL
+        )'
+        );
 
         // Index for searching unprocessed events
-        $this->addSql('CREATE INDEX idx_outbox_events_status ON outbox_events (status, created_at)');
+        $this->addSql('CREATE INDEX idx_outbox_events_is_processed ON outbox_events (is_processed)');
 
-        // Index for retry mechanism
-        $this->addSql('CREATE INDEX idx_outbox_events_retry 
-                       ON outbox_events (next_retry_at) 
-                       WHERE status = \'failed\' AND attempts < max_attempts');
+        // Index for searching by event_id
+        $this->addSql('CREATE UNIQUE INDEX idx_outbox_events_event_id ON outbox_events (event_id)');
 
         // Index for searching by aggregate
-        $this->addSql('CREATE INDEX idx_outbox_events_aggregate ON outbox_events (aggregate_id, aggregate_type)');
+        $this->addSql('CREATE INDEX idx_outbox_events_aggregate_id ON outbox_events (aggregate_id)');
 
-        // Index for cleaning old records
-        $this->addSql('CREATE INDEX idx_outbox_events_processed_at 
-                       ON outbox_events (processed_at) 
-                       WHERE status = \'processed\'');
-
-        // Creating ENUM for statuses (alternative approach)
-        $this->addSql('ALTER TABLE outbox_events 
-                       ADD CONSTRAINT chk_outbox_events_status 
-                       CHECK (status IN (\'pending\', \'processing\', \'processed\', \'failed\', \'dead_letter\'))');
+        // Index for sorting by creation date (for FIFO processing)
+        $this->addSql('CREATE INDEX idx_outbox_events_created_at ON outbox_events (created_at)');
     }
 
     public function down(Schema $schema): void

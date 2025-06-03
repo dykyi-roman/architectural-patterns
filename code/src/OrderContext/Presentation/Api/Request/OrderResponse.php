@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\Presentation\DTO;
+namespace OrderContext\Presentation\Api\Request;
 
 /**
  * DTO for representing order response

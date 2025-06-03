@@ -3,11 +3,9 @@ doctrine:
         url: '%env(resolve:DATABASE_URL)%'
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
-        # Custom types for UUID and JSON
         types:
-            uuid: Ramsey\Uuid\Doctrine\UuidType
+            uuid: Symfony\Bridge\Doctrine\Types\UuidType
             json: Doctrine\DBAL\Types\JsonType
-        # Platform options for PostgreSQL
         options:
             charset: utf8
     orm:

@@ -8,17 +8,21 @@ use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
 use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\ValueObject\OrderId;
+use Shared\DomainModel\Entity\AggregateRootInterface;
 
 interface OrderWriteModelRepositoryInterface
 {
     /**
      * @throws SaveOrderException
      */
-    public function save(Order $order): void;
+    public function save(
+        AggregateRootInterface $entity,
+        bool $outbox = false,
+        bool $events = false,
+        bool $flush = true
+    ): void;
 
     /**
-     * Проверяет существование заказа по идентификатору
-     *
      * @param OrderId $orderId Идентификатор заказа
      * @return bool Существует ли заказ
      * @throws \RuntimeException При ошибке проверки

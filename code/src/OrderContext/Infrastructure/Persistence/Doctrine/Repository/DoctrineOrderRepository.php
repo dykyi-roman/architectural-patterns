@@ -4,46 +4,16 @@ declare(strict_types=1);
 
 namespace OrderContext\Infrastructure\Persistence\Doctrine\Repository;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use OrderContext\DomainModel\Entity\Order;
-use OrderContext\DomainModel\Enum\OrderErrorCodes;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
-use OrderContext\DomainModel\Exception\SaveOrderException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use RuntimeException;
+use Shared\Infrastructure\Persistence\Doctrine\Repository\AbstractDoctrineRepository;
 
-final readonly class DoctrineOrderRepository implements OrderWriteModelRepositoryInterface
+final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository implements
+    OrderWriteModelRepositoryInterface
 {
-    /** @var EntityRepository<Order> */
-    private EntityRepository $repository;
-
-    public function __construct(
-        private EntityManagerInterface $entityManager,
-        private EventStoreInterface $eventStore,
-    ) {
-        $this->repository = $this->entityManager->getRepository(Order::class);
-    }
-
-    /**
-     * @throw SaveOrderException
-     */
-    public function save(Order $order): void
-    {
-        try {
-            $this->entityManager->persist($order);
-            $this->entityManager->flush();
-        } catch (\Throwable $exception) {
-            throw new SaveOrderException($exception->getMessage());
-        }
-
-        $events = $order->releaseEvents();
-        foreach ($events as $event) {
-            $this->eventStore->store($event);
-        }
-    }
-
     public function exists(OrderId $orderId): bool
     {
         try {
@@ -67,5 +37,10 @@ final readonly class DoctrineOrderRepository implements OrderWriteModelRepositor
         $order = $this->repository->find($orderId->toString());
 
         return $order ?? throw new OrderNotFoundException($orderId);
+    }
+
+    protected function entityClass(): string
+    {
+        return Order::class;
     }
 }

@@ -13,13 +13,14 @@ use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
+use Shared\DomainModel\Entity\AbstractAggregateRoot;
 use Shared\DomainModel\Event\DomainEventInterface;
 use Symfony\Component\Uid\Uuid;
 
 /**
  * Order Aggregate
  */
-final class Order
+final class Order extends AbstractAggregateRoot
 {
     /** @var array<OrderItem> */
     private array $items = [];
@@ -60,8 +61,6 @@ final class Order
     }
 
     /**
-     * Создает новый заказ
-     *
      * @param OrderId $orderId Идентификатор заказа
      * @param CustomerId $customerId Идентификатор клиента
      * @param array<OrderItem> $items Элементы заказа
@@ -182,7 +181,7 @@ final class Order
         return $totalAmount;
     }
 
-    private function recordEvent(DomainEventInterface $event): void
+    public function recordEvent(DomainEventInterface $event): void
     {
         $this->domainEvents[] = $event;
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shared\Presentation\Console;
 
 use Psr\Log\LoggerInterface;
-use Shared\Infrastructure\Outbox\OutboxEventProcessor;
+use Shared\Infrastructure\Outbox\Service\OutboxEventProcessor;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,15 +13,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
-    name: 'order:process-outbox',
+    name: 'app:process-outbox',
     description: 'Process outbox events and publish them to message broker'
 )]
 final class ProcessOutboxEventsCommand extends Command
 {
-    /**
-     * @param OutboxEventProcessor $outboxProcessor
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         private readonly OutboxEventProcessor $outboxProcessor,
         private readonly LoggerInterface $logger,
@@ -29,11 +25,6 @@ final class ProcessOutboxEventsCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * Конфигурирует опции команды
-     *
-     * @return void
-     */
     protected function configure(): void
     {
         $this
@@ -61,12 +52,6 @@ final class ProcessOutboxEventsCommand extends Command
     }
 
     /**
-     * Выполняет команду обработки событий Outbox
-     *
-     * @param InputInterface $input Интерфейс ввода
-     * @param OutputInterface $output Интерфейс вывода
-     * @return int Код завершения
-     * 
      * @throws \Exception При возникновении ошибки в процессе обработки
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -100,7 +85,6 @@ final class ProcessOutboxEventsCommand extends Command
                     'total_processed' => $totalProcessed,
                 ]);
 
-                // Если нет событий и команда запущена в бесконечном режиме, делаем паузу
                 if ($processed === 0 && ($iterations === 0 || $iteration < $iterations)) {
                     $output->writeln(sprintf('<comment>No events to process, waiting for %d seconds...</comment>', $delay));
                     sleep($delay);

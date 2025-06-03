@@ -10,17 +10,14 @@ namespace Shared\DomainModel\Exception;
 abstract class DomainException extends \DomainException implements \JsonSerializable
 {
     /**
-     * @param T $errorCode
+     * @param T                    $errorCode
+     * @param array<string, mixed> $context
      */
     public function __construct(
         protected readonly \BackedEnum $errorCode,
         string $message,
-        public array $context = [] {
-            get {
-                return $this->context;
-            }
-        },
-        ?\Throwable $previous = null
+        public array $context = [],
+        ?\Throwable $previous = null,
     ) {
         parent::__construct($message, 0, $previous);
     }
@@ -33,11 +30,14 @@ abstract class DomainException extends \DomainException implements \JsonSerializ
         return $this->errorCode;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function jsonSerialize(): array
     {
-       return [
-           'errorCode' => $this->errorCode,
-           'context' => $this->context,
-       ];
+        return [
+            'errorCode' => $this->errorCode,
+            'context' => $this->context,
+        ];
     }
 }

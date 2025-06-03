@@ -157,6 +157,14 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-amqplib/php-amqplib" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpseclib/phpseclib" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/lock" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/elastic/transport" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/elasticsearch/elasticsearch" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/nyholm/psr7" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/open-telemetry/api" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/open-telemetry/context" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/discovery" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/httplug" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/promise" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -7,10 +7,20 @@ namespace Shared\DomainModel\Event;
 interface DomainEventInterface extends \JsonSerializable
 {
     public function getEventId(): string;
-    
-    public function getOccurredOn(): \DateTimeImmutable;
-    
-    public function getEventName(): string;
-    
+
     public function getAggregateId(): string;
+
+    public function getOccurredAt(): \DateTimeImmutable;
+
+    public function getEventName(): string;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array;
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): static;
 }
