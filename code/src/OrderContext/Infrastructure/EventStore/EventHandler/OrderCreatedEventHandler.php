@@ -38,7 +38,11 @@ final readonly class OrderCreatedEventHandler
         );
 
         // Создание read-модели заказа в Elasticsearch
-        $this->readModelRepository->index($event->jsonSerialize());
+        try {
+            $this->readModelRepository->index($event->jsonSerialize());
+        }catch (\Throwable $throwable) {
+            dump($throwable->getMessage()); die();
+        }
 
         $this->logger->info(
             'Заказ успешно проиндексирован в read-модели',
