@@ -73,10 +73,15 @@ services:
         tags:
             - { name: 'messenger.message_handler', bus: 'event.bus' }
 
+    #############################################################################
     # Event Store
+    #############################################################################
     Shared\Infrastructure\EventStore\Repository\DoctrineEventStore:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
 
     Shared\Infrastructure\EventStore\EventStoreInterface:
-        class: OrderContext\Infrastructure\EventStore\DoctrineEventStore
+        class: Shared\Infrastructure\EventStore\Repository\DoctrineEventStore
+
+    # Services
+    OrderContext\Application\Service\ApplicationService: ~

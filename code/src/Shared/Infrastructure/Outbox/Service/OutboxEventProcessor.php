@@ -46,6 +46,7 @@ final readonly class OutboxEventProcessor
 
         try {
             $events = $this->outboxRepository->findUnprocessed($batchSize);
+            dump($events); die();
             if (empty($events)) {
                 $this->logger->debug('No unprocessed outbox events found');
 

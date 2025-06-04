@@ -16,17 +16,26 @@ use OrderContext\DomainModel\ValueObject\OrderStatus;
 use Shared\DomainModel\Entity\AbstractAggregateRoot;
 use Shared\DomainModel\Event\DomainEventInterface;
 use Symfony\Component\Uid\Uuid;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Order Aggregate
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'orders')]
 final class Order extends AbstractAggregateRoot
 {
-    /** @var array<OrderItem> */
-    private array $items = [];
+    /** 
+     * @var Collection<int, OrderItem> 
+     */
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $items;
 
-    /** @var array<\Shared\DomainModel\Event\DomainEventInterface> */
-    private array $domainEvents = [];
+//    /** @var array<\Shared\DomainModel\Event\DomainEventInterface> */
+//    #[ORM\Transient]
+//    private array $domainEvents = [];
 
     /**
      * @param OrderId $id Идентификатор заказа
@@ -36,12 +45,23 @@ final class Order extends AbstractAggregateRoot
      * @param DateTimeImmutable|null $updatedAt Дата и время последнего обновления заказа
      */
     private function __construct(
+        #[ORM\Id]
+        #[ORM\Column(type: 'order_id')]
         private readonly OrderId $id,
+        
+        #[ORM\Column(type: 'customer_id')]
         private readonly CustomerId $customerId,
+        
+        #[ORM\Column(type: 'string', enumType: OrderStatus::class)]
         private OrderStatus $status,
+        
+        #[ORM\Column(type: 'datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
+        
+        #[ORM\Column(type: 'datetime_immutable', nullable: true)]
         private ?DateTimeImmutable $updatedAt = null
     ) {
+        $this->items = new ArrayCollection();
     }
 
     public function changeStatus(OrderStatus $status): void
@@ -81,6 +101,10 @@ final class Order extends AbstractAggregateRoot
             $now
         );
 
+        foreach ($items as $item) {
+            $order->addItem($item);
+        }
+
         $order->recordEvent(
             new OrderCreatedEvent(
                 uuid_create(),
@@ -93,6 +117,52 @@ final class Order extends AbstractAggregateRoot
         );
 
         return $order;
+    }
+
+    /**
+     * Воссоздает объект Order из хранилища данных
+     *
+     * @param OrderId $id Идентификатор заказа
+     * @param CustomerId $customerId Идентификатор клиента
+     * @param OrderStatus $status Статус заказа
+     * @param DateTimeImmutable $createdAt Дата и время создания заказа
+     * @param DateTimeImmutable|null $updatedAt Дата и время последнего обновления заказа
+     * @param OrderItem ...$items Элементы заказа
+     * @return self
+     */
+    public static function reconstruct(
+        OrderId $id,
+        CustomerId $customerId,
+        OrderStatus $status,
+        DateTimeImmutable $createdAt,
+        ?DateTimeImmutable $updatedAt = null,
+        OrderItem ...$items
+    ): self {
+        $order = new self(
+            $id,
+            $customerId,
+            $status,
+            $createdAt,
+            $updatedAt
+        );
+
+        foreach ($items as $item) {
+            $order->addItem($item);
+        }
+
+        return $order;
+    }
+
+    /**
+     * Добавляет элемент заказа
+     *
+     * @param OrderItem $item Элемент заказа
+     * @return void
+     */
+    public function addItem(OrderItem $item): void
+    {
+        $item->assignToOrder($this);
+        $this->items->add($item);
     }
 
     /**
@@ -163,11 +233,11 @@ final class Order extends AbstractAggregateRoot
      */
     public function calculateTotalAmount(): Money
     {
-        if (empty($this->items)) {
+        if ($this->items->isEmpty()) {
             throw new InvalidArgumentException('Невозможно рассчитать сумму пустого заказа');
         }
 
-        $firstItem = reset($this->items);
+        $firstItem = $this->items->first();
         $currency = $firstItem->getPrice()->getCurrency();
         $totalAmount = Money::fromAmount(0, $currency);
 
@@ -200,8 +270,6 @@ final class Order extends AbstractAggregateRoot
 
     /**
      * Возвращает идентификатор заказа
-     *
-     * @return OrderId
      */
     public function getId(): OrderId
     {
@@ -210,8 +278,6 @@ final class Order extends AbstractAggregateRoot
 
     /**
      * Возвращает идентификатор клиента
-     *
-     * @return CustomerId
      */
     public function getCustomerId(): CustomerId
     {
@@ -220,8 +286,6 @@ final class Order extends AbstractAggregateRoot
 
     /**
      * Возвращает статус заказа
-     *
-     * @return OrderStatus
      */
     public function getStatus(): OrderStatus
     {
@@ -230,8 +294,6 @@ final class Order extends AbstractAggregateRoot
 
     /**
      * Возвращает дату и время создания заказа
-     *
-     * @return DateTimeImmutable
      */
     public function getCreatedAt(): DateTimeImmutable
     {
@@ -240,8 +302,6 @@ final class Order extends AbstractAggregateRoot
 
     /**
      * Возвращает дату и время последнего обновления заказа
-     *
-     * @return DateTimeImmutable|null
      */
     public function getUpdatedAt(): ?DateTimeImmutable
     {
@@ -251,32 +311,10 @@ final class Order extends AbstractAggregateRoot
     /**
      * Возвращает элементы заказа
      *
-     * @return array<OrderItem>
+     * @return Collection<int, OrderItem>
      */
-    public function getItems(): array
+    public function getItems(): Collection
     {
         return $this->items;
-    }
-
-    /**
-     * @param array<string, mixed> $data Данные заказа
-     * @return self
-     * @throws \DateMalformedStringException
-     */
-    public static function fromArray(array $data): self
-    {
-        $order = new self(
-            OrderId::fromString($data['id']),
-            CustomerId::fromString($data['customer_id']),
-            OrderStatus::fromString($data['status']),
-            new DateTimeImmutable($data['created_at']),
-            isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null
-        );
-
-        foreach ($data['items'] as $itemData) {
-            $order->items[] = OrderItem::fromArray($itemData);
-        }
-
-        return $order;
     }
 }

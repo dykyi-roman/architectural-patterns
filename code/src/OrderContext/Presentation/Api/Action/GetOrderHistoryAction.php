@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace OrderContext\Presentation\Api\Action;
 
-use OrderContext\Application\Service\OrderApplicationService;
 use OrderContext\Application\UseCases\GetOrderHistory\Dto\OrderHistoryDto;
 use OrderContext\Application\UseCases\GetOrderHistory\Exception\HistoryNotFoundException;
 use OrderContext\Application\UseCases\GetOrderHistory\Query\GetOrderHistoryQuery;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\Presentation\Api\Response\GetOrderHistoryResponse;
+use Shared\Application\Service\ApplicationService;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1', name: 'api_orders_')]
+#[Route('/v1', name: 'api_orders_')]
 final readonly class GetOrderHistoryAction
 {
     public function __construct(
-        private OrderApplicationService $applicationService,
+        private ApplicationService $applicationService,
     ) {
     }
 

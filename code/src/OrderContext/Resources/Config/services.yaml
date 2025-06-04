@@ -21,6 +21,19 @@ services:
             - '../../**/Tests/'
         tags: [ 'controller.service_arguments' ]
 
+    # Doctrine Types
+    OrderContext\Infrastructure\Persistence\Doctrine\Type\OrderIdType:
+        tags: ['doctrine.dbal.type']
+
+    OrderContext\Infrastructure\Persistence\Doctrine\Type\CustomerIdType:
+        tags: ['doctrine.dbal.type']
+
+    OrderContext\Infrastructure\Persistence\Doctrine\Type\ProductIdType:
+        tags: ['doctrine.dbal.type']
+
+    OrderContext\Infrastructure\Persistence\Doctrine\Type\MoneyType:
+        tags: ['doctrine.dbal.type']
+
     # Repositories
     OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface:
         alias: OrderContext\Infrastructure\Persistence\Doctrine\Repository\DoctrineOrderRepository
@@ -76,9 +89,6 @@ services:
     OrderContext\Application\UseCases\GetOrdersList\Query\GetOrdersListQueryHandler:
         tags:
             - { name: 'messenger.message_handler', bus: 'query.bus' }
-
-    # Services
-    OrderContext\Application\Service\OrderApplicationService: ~
 
     # Transaction Service
     OrderContext\Infrastructure\Transaction\TransactionServiceInterface:

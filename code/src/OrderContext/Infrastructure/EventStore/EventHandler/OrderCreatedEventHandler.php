@@ -32,7 +32,7 @@ final readonly class OrderCreatedEventHandler implements EventHandlerInterface
                 sprintf('Ожидается событие типа %s, получено %s', OrderCreatedEvent::class, get_class($event))
             );
         }
-
+dump($event); die();
         $this->logger->info(
             'Обработка события создания заказа для обновления read-модели',
             ['order_id' => $event->getOrderId()->toString()]

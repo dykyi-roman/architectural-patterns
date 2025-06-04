@@ -7,12 +7,14 @@ namespace OrderContext\DomainModel\Entity;
 use InvalidArgumentException;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\ProductId;
-use PHPUnit\Util\Json;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Сущность элемента заказа
  */
-final readonly class OrderItem implements \JsonSerializable
+#[ORM\Entity]
+#[ORM\Table(name: 'order_items')]
+final class OrderItem implements \JsonSerializable
 {
     /**
      * @param ProductId $productId Идентификатор продукта
@@ -21,9 +23,23 @@ final readonly class OrderItem implements \JsonSerializable
      * @throws InvalidArgumentException Если количество меньше 1
      */
     private function __construct(
-        private ProductId $productId,
-        private int $quantity,
-        private Money $price
+        #[ORM\Id]
+        #[ORM\GeneratedValue(strategy: 'AUTO')]
+        #[ORM\Column(type: 'integer')]
+        private ?int $id = null,
+
+        #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'items')]
+        #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id', nullable: false)]
+        private ?Order $order = null,
+
+        #[ORM\Column(type: 'product_id')]
+        private readonly ProductId $productId,
+
+        #[ORM\Column(type: 'integer')]
+        private readonly int $quantity,
+
+        #[ORM\Column(type: 'money')]
+        private readonly Money $price
     ) {
         if ($quantity < 1) {
             throw new InvalidArgumentException('Количество не может быть меньше 1');
@@ -41,7 +57,18 @@ final readonly class OrderItem implements \JsonSerializable
      */
     public static function create(ProductId $productId, int $quantity, Money $price): self
     {
-        return new self($productId, $quantity, $price);
+        return new self(null, null, $productId, $quantity, $price);
+    }
+
+    /**
+     * Присваивает элемент заказа к заказу
+     *
+     * @param Order $order Заказ
+     * @return void
+     */
+    public function assignToOrder(Order $order): void
+    {
+        $this->order = $order;
     }
 
     /**
@@ -110,9 +137,11 @@ final readonly class OrderItem implements \JsonSerializable
     public static function fromArray(array $data): self
     {
         return new self(
-            ProductId::fromString($data['product_id']),
+            null,
+            null,
+            ProductId::fromString((string) $data['product_id']),
             $data['quantity'],
-            Money::fromAmount($data['price']['amount'], $data['price']['currency'])
+            $data['money'],
         );
     }
 }

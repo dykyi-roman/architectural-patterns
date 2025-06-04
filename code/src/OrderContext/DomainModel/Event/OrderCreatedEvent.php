@@ -74,7 +74,7 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
      * @param array<string, mixed> $data Данные события
      * @throws \DateMalformedStringException
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
         return new self(
             $data['event_id'],

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace OrderContext\DomainModel\ValueObject;
 
 use InvalidArgumentException;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Value Object для представления денежной суммы
  */
+#[ORM\Embeddable]
 final readonly class Money
 {
     /**
@@ -16,8 +18,11 @@ final readonly class Money
      * @param string $currency Код валюты (ISO 4217)
      * @throws InvalidArgumentException Если сумма отрицательная или валюта не указана
      */
+    #[ORM\Column(name: 'amount', type: 'integer')]
     private function __construct(
         private int $amount,
+        
+        #[ORM\Column(name: 'currency', type: 'string', length: 3)]
         private string $currency
     ) {
         if ($amount < 0) {

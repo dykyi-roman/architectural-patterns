@@ -1,8 +1,21 @@
 doctrine:
-  # OrderContext mapping
-#  OrderContext:
-#    is_bundle: false
-#    type: attribute
-#    dir: '%kernel.project_dir%/src/OrderContext/Infrastructure/Persistence/Doctrine/Entity'
-#    prefix: 'App\OrderContext\Infrastructure\Persistence\Doctrine\Entity'
-#    alias: OrderContext
+  dbal:
+    types:
+      order_id: OrderContext\Infrastructure\Persistence\Doctrine\Type\OrderIdType
+      customer_id: OrderContext\Infrastructure\Persistence\Doctrine\Type\CustomerIdType
+      product_id: OrderContext\Infrastructure\Persistence\Doctrine\Type\ProductIdType
+      money: OrderContext\Infrastructure\Persistence\Doctrine\Type\MoneyType
+  orm:
+    mappings:
+      OrderContextEntity:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/src/OrderContext/DomainModel/Entity'
+        prefix: 'OrderContext\DomainModel\Entity'
+        alias: OrderContextEntity
+      OrderContextValueObject:
+        is_bundle: false
+        type: attribute
+        dir: '%kernel.project_dir%/src/OrderContext/DomainModel/ValueObject'
+        prefix: 'OrderContext\DomainModel\ValueObject'
+        alias: OrderContextValueObject

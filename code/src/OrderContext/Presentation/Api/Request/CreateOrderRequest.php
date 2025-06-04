@@ -54,9 +54,9 @@ final readonly class CreateOrderRequest
     {
         return array_map(
             fn(array $item): OrderItem => OrderItem::fromArray([
-                'product_id' => ProductId::fromString($item['product_id']),
+                'product_id' => ProductId::fromString((string) $item['product_id']),
                 'quantity' => $item['quantity'],
-                'price' => Money::fromAmount($item['price'], $item['currency']),
+                'money' => Money::fromAmount($item['price'], $item['currency']),
             ]),
             $this->items,
         );

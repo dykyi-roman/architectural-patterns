@@ -6,16 +6,19 @@ namespace OrderContext\DomainModel\ValueObject;
 
 use InvalidArgumentException;
 use Stringable;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Value Object для идентификатора клиента
  */
+#[ORM\Embeddable]
 final readonly class CustomerId implements Stringable
 {
     /**
      * @param string $value Значение идентификатора клиента
      * @throws InvalidArgumentException Если идентификатор пустой
      */
+    #[ORM\Column(name: 'customer_id', type: 'string', length: 36)]
     private function __construct(
         private string $value
     ) {

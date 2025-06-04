@@ -165,6 +165,7 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/discovery" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/httplug" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/promise" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/intl" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

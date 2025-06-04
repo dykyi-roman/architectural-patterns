@@ -69,12 +69,10 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
     }
 
     /**
-     * Создает событие из массива данных
-     *
      * @param array<string, mixed> $data Данные события
      * @return self
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
         return new self(
             $data['event_id'],

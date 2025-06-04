@@ -30,7 +30,7 @@ final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository 
     }
 
     /**
-     * @throw OrderNotFoundException
+     * @throws OrderNotFoundException
      */
     public function findById(OrderId $orderId): Order
     {
