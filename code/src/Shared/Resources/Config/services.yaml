@@ -67,9 +67,11 @@ services:
 
     Shared\Infrastructure\Outbox\Service\OutboxEventProcessor:
         arguments:
-            $messageBus: '@event.bus.adapter'
+            $eventBus: '@event.bus.adapter'
 
     Shared\Infrastructure\Outbox\Command\OutboxMessageEnvelopeHandler:
+        arguments:
+            $eventBus: '@event.bus.adapter'
         tags:
             - { name: 'messenger.message_handler', bus: 'event.bus' }
 

@@ -25,6 +25,9 @@ framework:
             # commands
             OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatusCommand: sync
             OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommand: sync
+            # events
+            OrderContext\DomainModel\Event\OrderCreatedEvent: sync
+            OrderContext\DomainModel\Event\OrderStatusChangedEvent: sync
 
 # when@test:
 #    framework:

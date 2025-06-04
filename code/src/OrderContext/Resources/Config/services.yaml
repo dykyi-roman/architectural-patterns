@@ -67,10 +67,12 @@ services:
 
     # EventHandlers
     OrderContext\Infrastructure\EventStore\EventHandler\OrderCreatedEventHandler:
-        tags: [ 'order.event_handler' ]
+        tags:
+            - { name: 'messenger.message_handler', bus: 'event.bus' }
 
     OrderContext\Infrastructure\EventStore\EventHandler\OrderStatusChangedEventHandler:
-        tags: [ 'order.event_handler' ]
+        tags:
+            - { name: 'messenger.message_handler', bus: 'event.bus' }
 
     # Registering command handlers in the message bus
     OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommandHandler:

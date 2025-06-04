@@ -17,9 +17,16 @@ use Doctrine\ORM\Mapping as ORM;
 final class OrderItem implements \JsonSerializable
 {
     /**
+     * @var Money Цена за единицу (транзиентное поле)
+     */
+    #[ORM\Transient]
+    private Money $price;
+
+    /**
      * @param ProductId $productId Идентификатор продукта
      * @param int $quantity Количество
-     * @param Money $price Цена за единицу
+     * @param float $priceAmount Сумма цены за единицу
+     * @param string $currency Валюта цены
      * @throws InvalidArgumentException Если количество меньше 1
      */
     private function __construct(
@@ -38,12 +45,17 @@ final class OrderItem implements \JsonSerializable
         #[ORM\Column(type: 'integer')]
         private readonly int $quantity,
 
-        #[ORM\Column(type: 'money')]
-        private readonly Money $price
+        #[ORM\Column(name: 'price', type: 'decimal', precision: 10, scale: 2)]
+        private readonly float $priceAmount,
+
+        #[ORM\Column(name: 'currency', type: 'string', length: 3)]
+        private readonly string $currency
     ) {
         if ($quantity < 1) {
             throw new InvalidArgumentException('Количество не может быть меньше 1');
         }
+        
+        $this->price = Money::fromAmount($priceAmount, $currency);
     }
 
     /**
@@ -57,7 +69,14 @@ final class OrderItem implements \JsonSerializable
      */
     public static function create(ProductId $productId, int $quantity, Money $price): self
     {
-        return new self(null, null, $productId, $quantity, $price);
+        return new self(
+            null, 
+            null, 
+            $productId, 
+            $quantity, 
+            $price->getAmount(), 
+            $price->getCurrency()
+        );
     }
 
     /**
@@ -122,8 +141,8 @@ final class OrderItem implements \JsonSerializable
             'product_id' => $this->productId->toString(),
             'quantity' => $this->quantity,
             'price' => [
-                'amount' => $this->price->getAmount(),
-                'currency' => $this->price->getCurrency(),
+                'amount' => $this->priceAmount,
+                'currency' => $this->currency,
             ],
         ];
     }
@@ -136,12 +155,17 @@ final class OrderItem implements \JsonSerializable
      */
     public static function fromArray(array $data): self
     {
+        $price = $data['price'] ?? [];
+        $amount = $price['amount'] ?? 0;
+        $currency = $price['currency'] ?? 'USD';
+        
         return new self(
             null,
             null,
             ProductId::fromString((string) $data['product_id']),
-            $data['quantity'],
-            $data['money'],
+            (int) $data['quantity'],
+            (float) $amount,
+            $currency
         );
     }
 }

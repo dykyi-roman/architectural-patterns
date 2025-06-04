@@ -14,7 +14,6 @@ use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
 use Shared\DomainModel\Entity\AbstractAggregateRoot;
-use Shared\DomainModel\Event\DomainEventInterface;
 use Symfony\Component\Uid\Uuid;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -33,17 +32,6 @@ final class Order extends AbstractAggregateRoot
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $items;
 
-//    /** @var array<\Shared\DomainModel\Event\DomainEventInterface> */
-//    #[ORM\Transient]
-//    private array $domainEvents = [];
-
-    /**
-     * @param OrderId $id Идентификатор заказа
-     * @param CustomerId $customerId Идентификатор клиента
-     * @param OrderStatus $status Статус заказа
-     * @param DateTimeImmutable $createdAt Дата и время создания заказа
-     * @param DateTimeImmutable|null $updatedAt Дата и время последнего обновления заказа
-     */
     private function __construct(
         #[ORM\Id]
         #[ORM\Column(type: 'order_id')]
@@ -58,10 +46,20 @@ final class Order extends AbstractAggregateRoot
         #[ORM\Column(type: 'datetime_immutable')]
         private readonly DateTimeImmutable $createdAt,
         
+        #[ORM\Column(name: 'total_amount', type: 'decimal', precision: 10, scale: 2)]
+        private float $totalAmountValue,
+        
+        #[ORM\Column(name: 'currency', type: 'string', length: 3)]
+        private string $currency,
+        
         #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-        private ?DateTimeImmutable $updatedAt = null
+        private ?DateTimeImmutable $updatedAt = null,
+        
+        #[ORM\Column(name: 'version', type: 'integer')]
+        private int $version = 1
     ) {
         $this->items = new ArrayCollection();
+        $this->updatedAt = new DateTimeImmutable();
     }
 
     public function changeStatus(OrderStatus $status): void
@@ -98,12 +96,17 @@ final class Order extends AbstractAggregateRoot
             $orderId,
             $customerId,
             OrderStatus::CREATED,
-            $now
+            $now,
+            0.0,
+            'USD'
         );
 
         foreach ($items as $item) {
             $order->addItem($item);
         }
+        
+        $totalAmount = $order->calculateTotalAmount();
+        $order->updateTotalAmount($totalAmount);
 
         $order->recordEvent(
             new OrderCreatedEvent(
@@ -111,7 +114,7 @@ final class Order extends AbstractAggregateRoot
                 $now,
                 $orderId,
                 $customerId,
-                $order->calculateTotalAmount(),
+                $totalAmount,
                 array_map(fn(OrderItem $item) => $item->jsonSerialize(), $items),
             )
         );
@@ -126,7 +129,10 @@ final class Order extends AbstractAggregateRoot
      * @param CustomerId $customerId Идентификатор клиента
      * @param OrderStatus $status Статус заказа
      * @param DateTimeImmutable $createdAt Дата и время создания заказа
+     * @param float $totalAmountValue Значение общей суммы заказа
+     * @param string $currency Валюта заказа
      * @param DateTimeImmutable|null $updatedAt Дата и время последнего обновления заказа
+     * @param int $version Версия заказа
      * @param OrderItem ...$items Элементы заказа
      * @return self
      */
@@ -135,7 +141,10 @@ final class Order extends AbstractAggregateRoot
         CustomerId $customerId,
         OrderStatus $status,
         DateTimeImmutable $createdAt,
+        float $totalAmountValue,
+        string $currency,
         ?DateTimeImmutable $updatedAt = null,
+        int $version = 1,
         OrderItem ...$items
     ): self {
         $order = new self(
@@ -143,7 +152,10 @@ final class Order extends AbstractAggregateRoot
             $customerId,
             $status,
             $createdAt,
-            $updatedAt
+            $totalAmountValue,
+            $currency,
+            $updatedAt,
+            $version
         );
 
         foreach ($items as $item) {
@@ -163,6 +175,18 @@ final class Order extends AbstractAggregateRoot
     {
         $item->assignToOrder($this);
         $this->items->add($item);
+        
+        // Обновляем общую сумму заказа при добавлении нового элемента
+        if ($this->items->count() > 0) {
+            $totalAmount = $this->calculateTotalAmount();
+            $this->updateTotalAmount($totalAmount);
+        }
+    }
+
+    private function updateTotalAmount(Money $totalAmount): void
+    {
+        $this->totalAmountValue = $totalAmount->getAmount();
+        $this->currency = $totalAmount->getCurrency();
     }
 
     /**
@@ -251,42 +275,21 @@ final class Order extends AbstractAggregateRoot
         return $totalAmount;
     }
 
-    public function recordEvent(DomainEventInterface $event): void
+    public function getVersion(): int
     {
-        $this->domainEvents[] = $event;
+        return $this->version;
     }
 
-    /**
-     * Возвращает и очищает все зарегистрированные доменные события
-     *
-     * @return array<DomainEventInterface>
-     */
-    public function releaseEvents(): array
-    {
-        $events = $this->domainEvents;
-        $this->domainEvents = [];
-        return $events;
-    }
-
-    /**
-     * Возвращает идентификатор заказа
-     */
     public function getId(): OrderId
     {
         return $this->id;
     }
 
-    /**
-     * Возвращает идентификатор клиента
-     */
     public function getCustomerId(): CustomerId
     {
         return $this->customerId;
     }
 
-    /**
-     * Возвращает статус заказа
-     */
     public function getStatus(): OrderStatus
     {
         return $this->status;

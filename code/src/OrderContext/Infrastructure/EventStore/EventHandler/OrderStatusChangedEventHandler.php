@@ -7,10 +7,8 @@ namespace OrderContext\Infrastructure\EventStore\EventHandler;
 use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
 use OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository;
 use Psr\Log\LoggerInterface;
-use Shared\DomainModel\Event\DomainEventInterface;
-use Shared\Infrastructure\EventStore\EventHandler\EventHandlerInterface;
 
-final readonly class OrderStatusChangedEventHandler implements EventHandlerInterface
+final readonly class OrderStatusChangedEventHandler
 {
     /**
      * @param ElasticsearchOrderReadModelRepository $readModelRepository
@@ -22,14 +20,8 @@ final readonly class OrderStatusChangedEventHandler implements EventHandlerInter
     ) {
     }
 
-    public function handle(DomainEventInterface $event): void
+    public function __invoke(OrderStatusChangedEvent $event): void
     {
-        if (!$event instanceof OrderStatusChangedEvent) {
-            throw new \InvalidArgumentException(
-                sprintf('Ожидается событие типа %s, получено %s', OrderStatusChangedEvent::class, get_class($event))
-            );
-        }
-
         $orderId = $event->getOrderId()->toString();
         $this->logger->info(
             'Обработка события изменения статуса заказа для обновления read-модели',
@@ -65,10 +57,5 @@ final readonly class OrderStatusChangedEventHandler implements EventHandlerInter
                 'new_status' => $event->getNewStatus()->value
             ]
         );
-    }
-
-    public function canHandle(DomainEventInterface $event): bool
-    {
-        return $event instanceof OrderStatusChangedEvent;
     }
 }

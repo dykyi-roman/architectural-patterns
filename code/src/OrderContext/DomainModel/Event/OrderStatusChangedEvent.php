@@ -82,4 +82,9 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
             OrderStatus::fromString($data['new_status'])
         );
     }
+
+    public function getOccurredAt(): \DateTimeImmutable
+    {
+        return $this->getOccurredOn();
+    }
 }

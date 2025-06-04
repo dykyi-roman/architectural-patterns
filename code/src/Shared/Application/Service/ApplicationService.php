@@ -26,7 +26,6 @@ final readonly class ApplicationService
         } catch (DomainException $exception) {
             $this->logger->error($exception->getMessage(), $exception->jsonSerialize());
         } catch (\Throwable $exception) {
-            dump($exception->getMessage()); die();
             $this->logger->error($exception->getMessage());
         }
     }

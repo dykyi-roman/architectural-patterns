@@ -15,7 +15,7 @@ final readonly class OutboxEventProcessor
 {
     public function __construct(
         private OutboxEventRepository $outboxRepository,
-        private MessageBusInterface $messageBus,
+        private MessageBusInterface $eventBus,
         private LockFactory $lockFactory,
         private LoggerInterface $logger,
         private string $exchangeName = 'order_events',
@@ -46,7 +46,6 @@ final readonly class OutboxEventProcessor
 
         try {
             $events = $this->outboxRepository->findUnprocessed($batchSize);
-            dump($events); die();
             if (empty($events)) {
                 $this->logger->debug('No unprocessed outbox events found');
 
@@ -69,7 +68,7 @@ final readonly class OutboxEventProcessor
                         ]
                     );
 
-                    $this->messageBus->dispatch($messageEnvelope);
+                    $this->eventBus->dispatch($messageEnvelope);
 
                     $event->markAsProcessed();
                     $this->outboxRepository->update($event);
