@@ -32,7 +32,7 @@ final readonly class OrderResponse implements \JsonSerializable
             status: $data['status'] ?? 'created',
             totalAmount: $data['total_amount'] ?? [],
             items: $data['items'] ?? [],
-            createdAt: $data['occurred_on'] ?? $data['created_at'] ?? date('c'),
+            createdAt: $data['occurred_at'] ?? $data['created_at'] ?? date('c'),
             updatedAt: $data['updated_at'] ?? null
         );
     }

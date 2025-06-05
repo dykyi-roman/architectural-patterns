@@ -23,12 +23,13 @@ final readonly class DoctrineEventStore implements EventStoreInterface
         try {
             $this->connection->insert('event_store', [
                 'event_id' => $event->getEventId(),
-                'occurred_on' => $event->getOccurredAt()->format('Y-m-d H:i:s.u'),
                 'event_type' => $event->getEventName(),
                 'aggregate_id' => $event->getAggregateId(),
+                'occurred_at' => $event->getOccurredAt()->format('Y-m-d H:i:s.u'),
                 'event_data' => json_encode($event->jsonSerialize(), JSON_THROW_ON_ERROR),
             ]);
         } catch (\Throwable $e) {
+            dump($e->getMessage()); die();
             throw new \RuntimeException(sprintf('Error saving event: %s', $e->getMessage()), 0, $e);
         }
     }
@@ -45,7 +46,7 @@ final readonly class DoctrineEventStore implements EventStoreInterface
                 ->select('*')
                 ->from('event_store')
                 ->where('aggregate_id = :aggregateId')
-                ->orderBy('occurred_on', 'ASC')
+                ->orderBy('occurred_at', 'ASC')
                 ->setParameter('aggregateId', $aggregateId->toString())
                 ->executeQuery();
 
@@ -72,7 +73,7 @@ final readonly class DoctrineEventStore implements EventStoreInterface
                 ->select('*')
                 ->from('event_store')
                 ->where('event_type = :eventType')
-                ->orderBy('occurred_on', 'ASC')
+                ->orderBy('occurred_at', 'ASC')
                 ->setParameter('eventType', $eventType)
                 ->executeQuery();
 

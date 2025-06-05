@@ -41,14 +41,12 @@ abstract readonly class AbstractDoctrineRepository
         foreach ($entity->releaseEvents() as $event) {
             try {
                 $outbox ? $this->outboxPublisher->publish($event) : $this->messageBus->dispatch($event);
-            } catch (\Throwable $exception) {
-                throw new \RuntimeException(sprintf('Failed to publish event "%s"', $event::class), 0, $exception);
-            }
-        }
 
-        if ($events) {
-            foreach ($entity->releaseEvents() as $event) {
-                $this->eventStore->append($event);
+                if ($events) {
+                    $this->eventStore->append($event);
+                }
+            } catch (\Throwable $exception) {
+                throw new \RuntimeException(sprintf('Failed to process event "%s"', $event::class), 0, $exception);
             }
         }
 

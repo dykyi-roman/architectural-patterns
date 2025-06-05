@@ -39,7 +39,7 @@ abstract readonly class AbstractDomainEvent implements DomainEventInterface
     {
         return [
             'event_id' => $this->eventId,
-            'occurred_on' => $this->occurredOn->format('Y-m-d\TH:i:s.uP'),
+            'occurred_at' => $this->occurredOn->format('Y-m-d\TH:i:s.uP'),
             'aggregate_id' => $this->aggregateId,
             'event_name' => $this->getEventName(),
         ];

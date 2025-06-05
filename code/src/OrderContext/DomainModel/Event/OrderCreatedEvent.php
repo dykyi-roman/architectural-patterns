@@ -69,7 +69,7 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
     {
         return new self(
             $data['event_id'],
-            new \DateTimeImmutable($data['occurred_on']),
+            new \DateTimeImmutable($data['occurred_at']),
             OrderId::fromString($data['order_id']),
             CustomerId::fromString($data['customer_id']),
             Money::fromAmount($data['total_amount']['amount'], $data['total_amount']['currency']),

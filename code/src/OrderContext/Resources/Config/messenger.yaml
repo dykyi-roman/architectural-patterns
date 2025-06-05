@@ -1,0 +1,13 @@
+framework:
+    messenger:
+        routing:
+            # queries
+            OrderContext\Application\UseCases\GetOrder\Query\GetOrderQuery: sync
+            OrderContext\Application\UseCases\GetOrdersList\Query\GetOrdersListQuery: sync
+            OrderContext\Application\UseCases\GetOrderHistory\Query\GetOrderHistoryQuery: sync
+            # commands
+            OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatusCommand: sync
+            OrderContext\Application\UseCases\CreateOrder\Command\CreateOrderCommand: sync
+            # events
+            OrderContext\DomainModel\Event\OrderCreatedEvent: sync
+            OrderContext\DomainModel\Event\OrderStatusChangedEvent: sync

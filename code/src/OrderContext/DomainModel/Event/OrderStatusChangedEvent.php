@@ -50,7 +50,7 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
     {
         return new self(
             $data['event_id'],
-            new \DateTimeImmutable($data['occurred_on']),
+            new \DateTimeImmutable($data['occurred_at']),
             OrderId::fromString($data['order_id']),
             OrderStatus::fromString($data['previous_status']),
             OrderStatus::fromString($data['new_status'])

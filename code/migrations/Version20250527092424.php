@@ -11,7 +11,7 @@ final class Version20250527092424 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Create event_store table for Event Sourcing';
+        return 'Create event_store table for Event Sourcing and outbox_events table for Outbox pattern';
     }
 
     public function up(Schema $schema): void

@@ -87,6 +87,10 @@ services:
         tags:
             - { name: 'messenger.message_handler', bus: 'query.bus' }
 
+    OrderContext\Application\UseCases\GetOrderHistory\Query\GetOrderHistoryQueryHandler:
+        tags:
+            - { name: 'messenger.message_handler', bus: 'query.bus' }
+
     # Transaction Service
     OrderContext\Infrastructure\Transaction\TransactionServiceInterface:
         class: OrderContext\Infrastructure\Transaction\DoctrineTransactionService
