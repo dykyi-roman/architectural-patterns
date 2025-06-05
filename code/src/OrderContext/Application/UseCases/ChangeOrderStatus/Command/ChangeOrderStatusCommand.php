@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OrderContext\Application\UseCases\ChangeOrderStatus\Command;
 
+use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use OrderContext\DomainModel\ValueObject\OrderStatus;
 
 /**
  * @see ChangeOrderStatusCommandHandler

@@ -7,12 +7,12 @@ namespace OrderContext\DomainModel\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
 use OrderContext\DomainModel\Event\OrderStatusChangedEvent;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use OrderContext\DomainModel\ValueObject\OrderStatus;
 use Shared\DomainModel\Entity\AbstractAggregateRoot;
 use Symfony\Component\Uid\Uuid;
 

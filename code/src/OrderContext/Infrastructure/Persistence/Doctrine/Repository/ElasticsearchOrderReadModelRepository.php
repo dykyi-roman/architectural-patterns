@@ -6,10 +6,10 @@ namespace OrderContext\Infrastructure\Persistence\Doctrine\Repository;
 
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\Exception\ClientResponseException;
+use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use OrderContext\DomainModel\ValueObject\OrderStatus;
 
 final readonly class ElasticsearchOrderReadModelRepository implements OrderReadModelRepositoryInterface
 {

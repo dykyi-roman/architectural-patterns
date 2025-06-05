@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace OrderContext\Presentation\Api\Action;
 
 use OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatusCommand;
+use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use OrderContext\DomainModel\ValueObject\OrderStatus;
 use OrderContext\Presentation\Api\Request\ChangeOrderStatusRequest;
 use OrderContext\Presentation\Api\Response\ChangeOrderStatusResponse;
 use Shared\Application\Service\ApplicationService;

@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OrderContext\DomainModel\ValueObject;
+namespace OrderContext\DomainModel\Enum;
 
 enum OrderStatus: string
 {
     case CREATED = 'created';
     case PAID = 'paid';
     case CANCELLED = 'cancelled';
+    case PROCESSING = 'processing';
 
     /**
      * @throws \InvalidArgumentException
@@ -18,6 +19,7 @@ enum OrderStatus: string
         return match (strtolower($status)) {
             'created' => self::CREATED,
             'paid' => self::PAID,
+            'processing' => self::PROCESSING,
             'cancelled' => self::CANCELLED,
             default => throw new \InvalidArgumentException("Invalid order status: {$status}"),
         };
@@ -25,26 +27,34 @@ enum OrderStatus: string
 
     public function isCreated(): bool
     {
-        return self::CREATED === $this;
+        return $this === self::CREATED;
     }
 
     public function isPaid(): bool
     {
-        return self::PAID === $this;
+        return $this === self::PAID;
     }
 
     public function isCancelled(): bool
     {
-        return self::CANCELLED === $this;
+        return $this === self::CANCELLED;
     }
 
     public function canBePaid(): bool
     {
-        return self::CREATED === $this;
+        return $this === self::CREATED;
     }
 
     public function canBeCancelled(): bool
     {
-        return self::CREATED === $this;
+        return $this === self::CREATED;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public static function getValues(): array
+    {
+        return array_column(self::cases(), 'value');
     }
 }

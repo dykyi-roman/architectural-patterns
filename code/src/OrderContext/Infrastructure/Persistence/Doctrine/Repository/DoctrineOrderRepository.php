@@ -28,7 +28,7 @@ final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository 
      */
     public function findById(OrderId $orderId): Order
     {
-        $order = $this->repository->find($orderId->toString());
+        $order = $this->repository->find($orderId);
 
         return $order ?? throw new OrderNotFoundException($orderId);
     }

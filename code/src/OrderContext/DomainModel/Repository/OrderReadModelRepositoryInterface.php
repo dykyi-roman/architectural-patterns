@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace OrderContext\DomainModel\Repository;
 
+use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use OrderContext\DomainModel\ValueObject\OrderStatus;
 
 interface OrderReadModelRepositoryInterface
 {
