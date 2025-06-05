@@ -8,11 +8,9 @@ use OrderContext\DomainModel\Entity\Order;
 use OrderContext\DomainModel\Exception\OrderNotFoundException;
 use OrderContext\DomainModel\Repository\OrderWriteModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\OrderId;
-use RuntimeException;
 use Shared\Infrastructure\Persistence\Doctrine\Repository\AbstractDoctrineRepository;
 
-final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository implements
-    OrderWriteModelRepositoryInterface
+final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository implements OrderWriteModelRepositoryInterface
 {
     public function exists(OrderId $orderId): bool
     {
@@ -21,11 +19,7 @@ final readonly class DoctrineOrderRepository extends AbstractDoctrineRepository 
 
             return $count > 0;
         } catch (\Throwable $exception) {
-            throw new RuntimeException(
-                "Ошибка при проверке существования заказа: {$exception->getMessage()}",
-                0,
-                $exception
-            );
+            throw new \RuntimeException("Error checking order existence: {$exception->getMessage()}", 0, $exception);
         }
     }
 

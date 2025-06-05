@@ -8,12 +8,9 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use OrderContext\DomainModel\ValueObject\Money;
 
-/**
- * Custom Doctrine type for Money value object
- */
 final class MoneyType extends Type
 {
-    public const NAME = 'money';
+    public const string NAME = 'money';
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
@@ -22,14 +19,12 @@ final class MoneyType extends Type
 
     public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
-        if ($value === null) {
+        if (null === $value) {
             return null;
         }
 
         if (!$value instanceof Money) {
-            throw new \InvalidArgumentException(
-                sprintf('Expected %s instance, got %s', Money::class, get_debug_type($value))
-            );
+            throw new \InvalidArgumentException(sprintf('Expected %s instance, got %s', Money::class, get_debug_type($value)));
         }
 
         return json_encode([
@@ -40,12 +35,12 @@ final class MoneyType extends Type
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?Money
     {
-        if ($value === null || $value === '') {
+        if (null === $value || '' === $value) {
             return null;
         }
 
         $data = json_decode($value, true);
-        
+
         if (!is_array($data) || !isset($data['amount']) || !isset($data['currency'])) {
             throw new \InvalidArgumentException('Invalid money data format');
         }

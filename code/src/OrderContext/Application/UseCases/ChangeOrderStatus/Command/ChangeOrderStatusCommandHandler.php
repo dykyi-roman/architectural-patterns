@@ -21,7 +21,7 @@ final readonly class ChangeOrderStatusCommandHandler
     public function __invoke(ChangeOrderStatusCommand $command): void
     {
         $order = $this->orderRepository->findById($command->getOrderId());
-        if ($order === null) {
+        if (null === $order) {
             throw new \DomainException('Order not found');
         }
 

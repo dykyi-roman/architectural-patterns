@@ -7,45 +7,45 @@ namespace OrderContext\Infrastructure\EventStore\EventHandler;
 use OrderContext\DomainModel\Event\OrderCreatedEvent;
 use OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository;
 use Psr\Log\LoggerInterface;
-use Shared\DomainModel\Event\DomainEventInterface;
 
-/**
- * Обработчик события создания заказа
- */
 final readonly class OrderCreatedEventHandler
 {
-    /**
-     * @param ElasticsearchOrderReadModelRepository $readModelRepository Репозиторий для чтения модели заказа
-     * @param LoggerInterface $logger Логгер
-     */
     public function __construct(
         private ElasticsearchOrderReadModelRepository $readModelRepository,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * Обрабатывает событие создания заказа
-     *
-     * @param OrderCreatedEvent $event Событие создания заказа
-     * @return void
-     */
     public function __invoke(OrderCreatedEvent $event): void
     {
         $this->logger->info(
-            'Обработка события создания заказа для обновления read-модели',
+            'Handling the order creation event to update the read model',
             ['order_id' => $event->getOrderId()->toString()]
         );
 
-        // Создание read-модели заказа в Elasticsearch
         try {
-            $this->readModelRepository->index($event->jsonSerialize());
-        }catch (\Throwable $throwable) {
-            dump($throwable->getMessage()); die();
+            $data = $event->jsonSerialize();
+            $this->logger->debug(
+                'Data to index in Elasticsearch',
+                ['data' => $data]
+            );
+
+            $this->readModelRepository->index($data);
+        } catch (\Throwable $throwable) {
+            $this->logger->error(
+                'Error indexing order in Elasticsearch',
+                [
+                    'order_id' => $event->getOrderId()->toString(),
+                    'error' => $throwable->getMessage(),
+                    'trace' => $throwable->getTraceAsString(),
+                ]
+            );
+
+            throw $throwable;
         }
 
         $this->logger->info(
-            'Заказ успешно проиндексирован в read-модели',
+            'The order was successfully indexed in the read model.',
             ['order_id' => $event->getOrderId()->toString()]
         );
     }

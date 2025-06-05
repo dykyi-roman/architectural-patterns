@@ -14,7 +14,7 @@ use OrderContext\DomainModel\ValueObject\OrderId;
 final readonly class CreateOrderCommand
 {
     /**
-     * @var \OrderContext\DomainModel\Entity\OrderItem[]
+     * @var OrderItem[]
      */
     private array $orderItems;
 

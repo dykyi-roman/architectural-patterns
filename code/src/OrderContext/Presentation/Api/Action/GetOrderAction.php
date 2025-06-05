@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class GetOrderAction extends AbstractController
 {
     public function __construct(
-        private readonly ApplicationService $applicationService
+        private readonly ApplicationService $applicationService,
     ) {
     }
 
@@ -27,7 +27,7 @@ final class GetOrderAction extends AbstractController
         $query = new GetOrderQuery(OrderId::fromString($orderId));
 
         $orderData = $this->applicationService->query($query);
-        if ($orderData === null) {
+        if (null === $orderData) {
             return new JsonResponse(['error' => 'Order not foud'], Response::HTTP_NOT_FOUND);
         }
 

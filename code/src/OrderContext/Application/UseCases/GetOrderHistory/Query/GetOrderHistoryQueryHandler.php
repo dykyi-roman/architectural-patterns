@@ -7,10 +7,9 @@ namespace OrderContext\Application\UseCases\GetOrderHistory\Query;
 use OrderContext\Application\UseCases\GetOrderHistory\Dto\EventDto;
 use OrderContext\Application\UseCases\GetOrderHistory\Dto\OrderHistoryDto;
 use OrderContext\Application\UseCases\GetOrderHistory\Exception\HistoryNotFoundException;
-use OrderContext\Infrastructure\EventStore\EventStoreInterface;
 use Shared\Application\Exception\ApplicationException;
 use Shared\DomainModel\Event\DomainEventInterface;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Shared\Infrastructure\EventStore\EventStoreInterface;
 
 final readonly class GetOrderHistoryQueryHandler
 {
@@ -22,7 +21,6 @@ final readonly class GetOrderHistoryQueryHandler
     /**
      * @throws ApplicationException
      */
-    #[AsMessageHandler(bus: 'query.bus')]
     public function __invoke(GetOrderHistoryQuery $query): OrderHistoryDto
     {
         $events = $this->eventStore->getEventsForAggregate($query->orderId);
@@ -33,7 +31,7 @@ final readonly class GetOrderHistoryQueryHandler
         return new OrderHistoryDto(
             $query->orderId,
             array_map(
-                static fn(DomainEventInterface $event) => new EventDto(
+                static fn (DomainEventInterface $event) => new EventDto(
                     $event->getEventId(),
                     $event->getOccurredOn(),
                     $event->getEventName(),

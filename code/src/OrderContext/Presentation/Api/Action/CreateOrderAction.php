@@ -27,12 +27,12 @@ final readonly class CreateOrderAction
     ): CreateOrderResponse {
         $this->applicationService->command(
             new CreateOrderCommand(
-                OrderId::generate(),
+                $orderId = OrderId::generate(),
                 CustomerId::fromString($request->customerId),
                 ...$request->getItems(),
             ),
         );
 
-        return new CreateOrderResponse();
+        return new CreateOrderResponse($orderId);
     }
 }

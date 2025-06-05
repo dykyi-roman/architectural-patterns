@@ -43,7 +43,7 @@ class Kernel extends BaseKernel
             $apiPath = $domainPath.'/Presentation/Api';
             if (is_dir($apiPath)) {
                 $routes->import($apiPath, 'attribute')
-                    ->prefix('/'.$domainName. '/api');
+                    ->prefix('/'.$domainName.'/api');
             } else {
                 // Search in subdirectories for API routes
                 $subFinder = new Finder();
@@ -55,7 +55,7 @@ class Kernel extends BaseKernel
                     $apiPath = $domainPath.'/'.$subFolder->getBasename().'/Presentation/Api';
                     if (is_dir($apiPath)) {
                         $routes->import($apiPath, 'attribute')
-                            ->prefix('/'.$domainName. '/api');
+                            ->prefix('/'.$domainName.'/api');
                     }
                 }
             }

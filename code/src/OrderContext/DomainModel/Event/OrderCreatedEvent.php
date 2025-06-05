@@ -11,12 +11,7 @@ use OrderContext\DomainModel\ValueObject\OrderId;
 final readonly class OrderCreatedEvent extends AbstractDomainEvent
 {
     /**
-     * @param string $eventId Уникальный идентификатор события
-     * @param \DateTimeImmutable $occurredOn Дата и время возникновения события
-     * @param OrderId $orderId Идентификатор заказа
-     * @param CustomerId $customerId Идентификатор клиента
-     * @param Money $totalAmount Общая сумма заказа
-     * @param array<array{product_id: string, quantity: int, price: array{amount: int, currency: string}}> $items Элементы заказа
+     * @param array<array{product_id: string, quantity: int, price: array{amount: int, currency: string}}> $items
      */
     public function __construct(
         string $eventId,
@@ -24,16 +19,11 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
         private OrderId $orderId,
         private CustomerId $customerId,
         private Money $totalAmount,
-        private array $items
+        private array $items,
     ) {
         parent::__construct($eventId, $occurredOn, $orderId->toString());
     }
 
-    /**
-     * Возвращает идентификатор заказа
-     *
-     * @return OrderId
-     */
     public function getOrderId(): OrderId
     {
         return $this->orderId;
@@ -71,7 +61,8 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
     }
 
     /**
-     * @param array<string, mixed> $data Данные события
+     * @param array<string, mixed> $data
+     *
      * @throws \DateMalformedStringException
      */
     public static function fromArray(array $data): static

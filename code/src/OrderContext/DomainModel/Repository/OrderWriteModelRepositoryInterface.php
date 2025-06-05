@@ -19,13 +19,11 @@ interface OrderWriteModelRepositoryInterface
         AggregateRootInterface $entity,
         bool $outbox = false,
         bool $events = false,
-        bool $flush = true
+        bool $flush = true,
     ): void;
 
     /**
-     * @param OrderId $orderId Идентификатор заказа
-     * @return bool Существует ли заказ
-     * @throws \RuntimeException При ошибке проверки
+     * @throws \RuntimeException
      */
     public function exists(OrderId $orderId): bool;
 

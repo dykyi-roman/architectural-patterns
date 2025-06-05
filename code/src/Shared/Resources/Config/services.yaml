@@ -86,4 +86,8 @@ services:
         class: Shared\Infrastructure\EventStore\Repository\DoctrineEventStore
 
     # Services
-    OrderContext\Application\Service\ApplicationService: ~
+    Shared\Application\Service\ApplicationService:
+        arguments:
+            $commandBus: '@command.bus.adapter'
+            $queryBus: '@query.bus.adapter'
+            $logger: '@logger'

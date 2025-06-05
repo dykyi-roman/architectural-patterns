@@ -6,21 +6,15 @@ namespace OrderContext\Presentation\Api\Request;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * DTO for order status change request
- */
 final readonly class ChangeOrderStatusRequest
 {
-    /**
-     * @param string $status New order status
-     */
     public function __construct(
-        #[Assert\NotBlank(message: 'Статус заказа не может быть пустым')]
+        #[Assert\NotBlank(message: 'Order status cannot be empty')]
         #[Assert\Choice(
             choices: ['created', 'processing', 'completed', 'shipped', 'delivered', 'cancelled'],
-            message: 'Недопустимый статус заказа'
+            message: 'Invalid order status'
         )]
-        public string $status
+        public string $status,
     ) {
     }
 }

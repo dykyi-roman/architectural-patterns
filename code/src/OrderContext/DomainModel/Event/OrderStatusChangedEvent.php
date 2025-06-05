@@ -9,56 +9,31 @@ use OrderContext\DomainModel\ValueObject\OrderStatus;
 
 final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
 {
-    /**
-     * @param string $eventId Уникальный идентификатор события
-     * @param \DateTimeImmutable $occurredOn Дата и время возникновения события
-     * @param OrderId $orderId Идентификатор заказа
-     * @param OrderStatus $previousStatus Предыдущий статус заказа
-     * @param OrderStatus $newStatus Новый статус заказа
-     */
     public function __construct(
         string $eventId,
         \DateTimeImmutable $occurredOn,
         private OrderId $orderId,
         private OrderStatus $previousStatus,
-        private OrderStatus $newStatus
+        private OrderStatus $newStatus,
     ) {
         parent::__construct($eventId, $occurredOn, $orderId->toString());
     }
 
-    /**
-     * Возвращает идентификатор заказа
-     *
-     * @return OrderId
-     */
     public function getOrderId(): OrderId
     {
         return $this->orderId;
     }
 
-    /**
-     * Возвращает предыдущий статус заказа
-     *
-     * @return OrderStatus
-     */
     public function getPreviousStatus(): OrderStatus
     {
         return $this->previousStatus;
     }
 
-    /**
-     * Возвращает новый статус заказа
-     *
-     * @return OrderStatus
-     */
     public function getNewStatus(): OrderStatus
     {
         return $this->newStatus;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function jsonSerialize(): array
     {
         return array_merge(parent::jsonSerialize(), [
@@ -69,8 +44,7 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
     }
 
     /**
-     * @param array<string, mixed> $data Данные события
-     * @return self
+     * @throws \DateMalformedStringException
      */
     public static function fromArray(array $data): static
     {

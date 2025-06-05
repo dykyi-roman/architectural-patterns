@@ -11,48 +11,43 @@ use OrderContext\DomainModel\ValueObject\OrderStatus;
 interface OrderReadModelRepositoryInterface
 {
     /**
-     * @return array<string, mixed>|null Данные заказа или null, если не найден
-     * @throws \RuntimeException При ошибке чтения из хранилища
+     * @return array<string, mixed>|null
+     *
+     * @throws \RuntimeException
      */
     public function findById(OrderId $orderId): ?array;
 
     /**
-     * Находит все заказы клиента
+     * @return array<array<string, mixed>>
      *
-     * @param CustomerId $customerId Идентификатор клиента
-     * @param int $offset Смещение для пагинации
-     * @param int $limit Ограничение количества результатов
-     * @return array<array<string, mixed>> Массив данных заказов
-     * @throws \RuntimeException При ошибке чтения из хранилища
+     * @throws \RuntimeException
      */
     public function findByCustomerId(CustomerId $customerId, int $offset = 0, int $limit = 20): array;
 
     /**
-     * Находит заказы по статусу
+     * @return array<array<string, mixed>>
      *
-     * @param OrderStatus $status Статус заказа
-     * @param int $offset Смещение для пагинации
-     * @param int $limit Ограничение количества результатов
-     * @return array<array<string, mixed>> Массив данных заказов
-     * @throws \RuntimeException При ошибке чтения из хранилища
+     * @throws \RuntimeException
      */
     public function findByStatus(OrderStatus $status, int $offset = 0, int $limit = 20): array;
-    
+
     /**
-     * Возвращает общее количество заказов
-     *
-     * @return int Количество заказов
-     * @throws \RuntimeException При ошибке чтения из хранилища
+     * @throws \RuntimeException
      */
     public function count(): int;
-    
+
     /**
-     * Находит все заказы с пагинацией
+     * @param array<string, mixed> $filters
      *
-     * @param int $offset Смещение для пагинации
-     * @param int $limit Ограничение количества результатов
-     * @return array<array<string, mixed>> Массив данных заказов
-     * @throws \RuntimeException При ошибке чтения из хранилища
+     * @return array{items: array<array<string, mixed>>, total: int}
+     *
+     * @throws \RuntimeException
      */
-    public function findAll(int $offset = 0, int $limit = 20): array;
+    public function findAll(
+        array $filters = [],
+        int $page = 1,
+        int $limit = 20,
+        ?string $sortBy = null,
+        string $sortDirection = 'desc',
+    ): array;
 }

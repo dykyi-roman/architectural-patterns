@@ -8,12 +8,9 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 
-/**
- * Custom Doctrine type for CustomerId value object
- */
 final class CustomerIdType extends Type
 {
-    public const NAME = 'customer_id';
+    public const string NAME = 'customer_id';
 
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
@@ -22,14 +19,12 @@ final class CustomerIdType extends Type
 
     public function convertToDatabaseValue($value, AbstractPlatform $platform): ?string
     {
-        if ($value === null) {
+        if (null === $value) {
             return null;
         }
 
         if (!$value instanceof CustomerId) {
-            throw new \InvalidArgumentException(
-                sprintf('Expected %s instance, got %s', CustomerId::class, get_debug_type($value))
-            );
+            throw new \InvalidArgumentException(sprintf('Expected %s instance, got %s', CustomerId::class, get_debug_type($value)));
         }
 
         return $value->toString();
@@ -37,7 +32,7 @@ final class CustomerIdType extends Type
 
     public function convertToPHPValue($value, AbstractPlatform $platform): ?CustomerId
     {
-        if ($value === null || $value === '') {
+        if (null === $value || '' === $value) {
             return null;
         }
 

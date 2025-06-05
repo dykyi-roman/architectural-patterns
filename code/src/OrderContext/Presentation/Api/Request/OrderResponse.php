@@ -4,19 +4,12 @@ declare(strict_types=1);
 
 namespace OrderContext\Presentation\Api\Request;
 
-/**
- * DTO for representing order response
- */
 final readonly class OrderResponse implements \JsonSerializable
 {
     /**
-     * @param string $id Order identifier
-     * @param string $customerId Customer identifier
-     * @param string $status Order status
-     * @param array<string, mixed> $totalAmount Total order amount
-     * @param array<array<string, mixed>> $items Order items
-     * @param string $createdAt Order creation datetime
-     * @param string|null $updatedAt Order last update datetime
+     * @param array<string, mixed>        $totalAmount Total order amount
+     * @param array<array<string, mixed>> $items       Order items
+     * @param string|null                 $updatedAt   Order last update datetime
      */
     public function __construct(
         private string $id,
@@ -25,15 +18,12 @@ final readonly class OrderResponse implements \JsonSerializable
         private array $totalAmount,
         private array $items,
         private string $createdAt,
-        private ?string $updatedAt = null
+        private ?string $updatedAt = null,
     ) {
     }
 
     /**
-     * Creates DTO from read model data
-     *
-     * @param array<string, mixed> $data Order data from read model
-     * @return self
+     * @param array<string, mixed> $data
      */
     public static function fromReadModel(array $data): self
     {
@@ -48,9 +38,6 @@ final readonly class OrderResponse implements \JsonSerializable
         );
     }
 
-    /**
-     * @inheritDoc
-     */
     public function jsonSerialize(): array
     {
         return [

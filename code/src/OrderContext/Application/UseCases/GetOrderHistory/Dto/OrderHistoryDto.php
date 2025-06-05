@@ -21,7 +21,7 @@ final readonly class OrderHistoryDto implements \JsonSerializable
     {
         return [
             'order_id' => $this->orderId->toString(),
-            'events' => array_map(fn(EventDto $event) => $event->jsonSerialize(), $this->events),
+            'events' => array_map(fn (EventDto $event) => $event->jsonSerialize(), $this->events),
         ];
     }
 }

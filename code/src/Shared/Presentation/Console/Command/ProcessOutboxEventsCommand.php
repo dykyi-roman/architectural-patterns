@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shared\Presentation\Console;
+namespace Shared\Presentation\Console\Command;
 
 use Psr\Log\LoggerInterface;
 use Shared\Infrastructure\Outbox\Service\OutboxEventProcessor;
+use Shared\Presentation\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
     name: 'app:process-outbox',
     description: 'Process outbox events and publish them to message broker'
 )]
-final class ProcessOutboxEventsCommand extends Command
+final class ProcessOutboxEventsCommand extends AbstractConsoleCommand
 {
     public function __construct(
         private readonly OutboxEventProcessor $outboxProcessor,
@@ -51,16 +51,12 @@ final class ProcessOutboxEventsCommand extends Command
             );
     }
 
-    /**
-     * @throws \Exception При возникновении ошибки в процессе обработки
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeCommand(InputInterface $input, OutputInterface $output): ConsoleOutput
     {
-        $batchSize = (int)$input->getOption('batch-size');
-        $iterations = (int)$input->getOption('iterations');
-        $delay = (int)$input->getOption('delay');
+        $batchSize = (int) $input->getOption('batch-size');
+        $iterations = (int) $input->getOption('iterations');
+        $delay = (int) $input->getOption('delay');
 
-        $output->writeln('<info>Starting outbox processing...</info>');
         $this->logger->info('Starting outbox event processing', [
             'batch_size' => $batchSize,
             'iterations' => $iterations,
@@ -69,40 +65,68 @@ final class ProcessOutboxEventsCommand extends Command
 
         $totalProcessed = 0;
         $iteration = 0;
+        $messages = [];
+
+        $messages[] = ConsoleOutput::formatMessage('Starting outbox processing...', 'info');
 
         try {
             do {
-                $iteration++;
-                $output->writeln(sprintf('<comment>Processing batch %d...</comment>', $iteration));
+                ++$iteration;
+                $messages[] = ConsoleOutput::formatMessage(
+                    sprintf('Processing batch %d...', $iteration),
+                    'comment'
+                );
 
                 $processed = $this->outboxProcessor->processOutboxEvents($batchSize);
                 $totalProcessed += $processed;
 
-                $output->writeln(sprintf('<info>Processed %d events in batch %d</info>', $processed, $iteration));
+                $messages[] = ConsoleOutput::formatMessage(
+                    sprintf('Processed %d events in batch %d', $processed, $iteration),
+                    'info'
+                );
+
                 $this->logger->info('Processed events batch', [
                     'batch' => $iteration,
                     'processed' => $processed,
                     'total_processed' => $totalProcessed,
                 ]);
 
-                if ($processed === 0 && ($iterations === 0 || $iteration < $iterations)) {
-                    $output->writeln(sprintf('<comment>No events to process, waiting for %d seconds...</comment>', $delay));
+                if (0 === $processed && (0 === $iterations || $iteration < $iterations)) {
+                    $messages[] = ConsoleOutput::formatMessage(
+                        sprintf('No events to process, waiting for %d seconds...', $delay),
+                        'comment'
+                    );
                     sleep($delay);
                 }
-            } while ($iterations === 0 || $iteration < $iterations);
+            } while (0 === $iterations || $iteration < $iterations);
 
-            $output->writeln(sprintf('<info>Outbox processing completed. Total processed: %d events</info>', $totalProcessed));
             $this->logger->info('Outbox event processing completed', ['total_processed' => $totalProcessed]);
 
-            return Command::SUCCESS;
+            return ConsoleOutput::success(
+                $messages,
+                'Outbox Event Processing',
+                [
+                    'processed_events' => $totalProcessed,
+                    'iterations' => $iteration,
+                ],
+                sprintf('Outbox processing completed. Total processed: %d events', $totalProcessed),
+            );
         } catch (\Exception $e) {
-            $output->writeln(sprintf('<error>Error processing outbox events: %s</error>', $e->getMessage()));
             $this->logger->error('Error processing outbox events', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return Command::FAILURE;
+            $messages[] = ConsoleOutput::formatMessage(
+                sprintf('Error processing outbox events: %s', $e->getMessage()),
+                'error'
+            );
+
+            return ConsoleOutput::failure(
+                $messages,
+                'Outbox Event Processing',
+                sprintf('Error: %s', $e->getMessage())
+            );
         }
     }
 }

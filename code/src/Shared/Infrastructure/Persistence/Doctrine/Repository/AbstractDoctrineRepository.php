@@ -34,7 +34,7 @@ abstract readonly class AbstractDoctrineRepository
         AggregateRootInterface $entity,
         bool $outbox = false,
         bool $events = false,
-        bool $flush = true
+        bool $flush = true,
     ): void {
         $this->entityManager->persist($entity);
 

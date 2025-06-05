@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Shared\Infrastructure\EventStore\Repository;
 
 use Doctrine\DBAL\Connection;
-use RuntimeException;
 use Shared\DomainModel\Event\DomainEventInterface;
 use Shared\Infrastructure\EventStore\EventStoreInterface;
 
 final readonly class DoctrineEventStore implements EventStoreInterface
 {
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
     ) {
     }
 
@@ -30,12 +29,13 @@ final readonly class DoctrineEventStore implements EventStoreInterface
                 'event_data' => json_encode($event->jsonSerialize(), JSON_THROW_ON_ERROR),
             ]);
         } catch (\Throwable $e) {
-            throw new RuntimeException(sprintf('Error saving event: %s', $e->getMessage()), 0, $e);
+            throw new \RuntimeException(sprintf('Error saving event: %s', $e->getMessage()), 0, $e);
         }
     }
 
     /**
      * @return array<DomainEventInterface>
+     *
      * @throws \RuntimeException
      */
     public function getEventsForAggregate(mixed $aggregateId): array
@@ -56,12 +56,13 @@ final readonly class DoctrineEventStore implements EventStoreInterface
 
             return $events;
         } catch (\Throwable $e) {
-            throw new RuntimeException(sprintf('Error getting events for aggregate: %s', $e->getMessage()), 0, $e);
+            throw new \RuntimeException(sprintf('Error getting events for aggregate: %s', $e->getMessage()), 0, $e);
         }
     }
 
     /**
      * @return array<DomainEventInterface>
+     *
      * @throws \RuntimeException
      */
     public function getEventsByType(string $eventType): array
@@ -82,13 +83,14 @@ final readonly class DoctrineEventStore implements EventStoreInterface
 
             return $events;
         } catch (\Throwable $e) {
-            throw new RuntimeException(sprintf('Error getting events by type: %s', $e->getMessage()), 0, $e);
+            throw new \RuntimeException(sprintf('Error getting events by type: %s', $e->getMessage()), 0, $e);
         }
     }
 
     /**
      * @param array<string, mixed> $row
-     * @throws RuntimeException
+     *
+     * @throws \RuntimeException
      */
     private function deserializeEvent(array $row): DomainEventInterface
     {
@@ -99,9 +101,7 @@ final readonly class DoctrineEventStore implements EventStoreInterface
             }
 
             if (!is_subclass_of($eventType, DomainEventInterface::class)) {
-                throw new \RuntimeException(
-                    sprintf('Event type %s must implement %s', $eventType, DomainEventInterface::class)
-                );
+                throw new \RuntimeException(sprintf('Event type %s must implement %s', $eventType, DomainEventInterface::class));
             }
 
             $data = json_decode($row['event_data'], true, 512, JSON_THROW_ON_ERROR);
@@ -111,7 +111,7 @@ final readonly class DoctrineEventStore implements EventStoreInterface
 
             return $row['event_type']::fromArray($data);
         } catch (\Throwable $e) {
-            throw new RuntimeException(sprintf("Error while deserializing event: %s", $e->getMessage()), 0, $e);
+            throw new \RuntimeException(sprintf('Error while deserializing event: %s', $e->getMessage()), 0, $e);
         }
     }
 }

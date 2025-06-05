@@ -52,7 +52,6 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/myclabs/deep-copy" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/netresearch/jsonmapper" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/nikic/php-parser" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/openmetrics-php/exposition-text" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phar-io/manifest" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phar-io/version" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpdocumentor/reflection-common" />
@@ -60,7 +59,6 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpdocumentor/type-resolver" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpmetrics/phpmetrics" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpstan/phpdoc-parser" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpstan/phpstan" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpstan/phpstan-symfony" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpunit/php-code-coverage" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/phpunit/php-file-iterator" />
@@ -123,7 +121,6 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/framework-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/http-foundation" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/http-kernel" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/messenger" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/monolog-bridge" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/monolog-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/options-resolver" />
@@ -140,18 +137,14 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/service-contracts" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/stopwatch" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/string" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/translation-contracts" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/type-info" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/uid" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/validator" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/var-dumper" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/var-exporter" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/yaml" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/theseer/tokenizer" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/vimeo/psalm" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/webmozart/assert" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/webmozart/glob" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/zircote/swagger-php" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/paragonie/constant_time_encoding" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/paragonie/random_compat" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-amqplib/php-amqplib" />
@@ -159,13 +152,14 @@
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/lock" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/elastic/transport" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/elasticsearch/elasticsearch" />
-      <excludeFolder url="file://$MODULE_DIR$/code/vendor/nyholm/psr7" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/open-telemetry/api" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/open-telemetry/context" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/discovery" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/httplug" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/php-http/promise" />
       <excludeFolder url="file://$MODULE_DIR$/code/vendor/symfony/intl" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/guzzlehttp/guzzle" />
+      <excludeFolder url="file://$MODULE_DIR$/code/vendor/guzzlehttp/promises" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -15,35 +15,35 @@ final readonly class CreateOrderRequest
      * @param array<array{product_id: string, quantity: int, price: int, currency: string}> $items Order items
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Идентификатор клиента не может быть пустым')]
-        #[Assert\Uuid(message: 'Идентификатор клиента должен быть валидным UUID')]
+        #[Assert\NotBlank(message: 'Customer ID cannot be empty')]
+        #[Assert\Uuid(message: 'Customer ID must be a valid UUID')]
         public string $customerId,
 
-        #[Assert\NotBlank(message: 'Заказ должен содержать хотя бы один товар')]
-        #[Assert\Count(min: 1, minMessage: 'Заказ должен содержать хотя бы один товар')]
+        #[Assert\NotBlank(message: 'The order must contain at least one product')]
+        #[Assert\Count(min: 1, minMessage: 'The order must contain at least one product')]
         #[Assert\All([
             new Assert\Collection([
                 'product_id' => [
-                    new Assert\NotBlank(message: 'Идентификатор продукта не может быть пустым'),
-                    new Assert\Uuid(message: 'Идентификатор продукта должен быть валидным UUID'),
+                    new Assert\NotBlank(message: 'Product ID cannot be empty'),
+                    new Assert\Uuid(message: 'Product ID must be a valid UUID'),
                 ],
                 'quantity' => [
-                    new Assert\NotBlank(message: 'Количество не может быть пустым'),
-                    new Assert\Type(type: 'integer', message: 'Количество должно быть целым числом'),
-                    new Assert\GreaterThan(value: 0, message: 'Количество должно быть больше 0'),
+                    new Assert\NotBlank(message: 'Quantity cannot be empty'),
+                    new Assert\Type(type: 'integer', message: 'Quantity must be an integer'),
+                    new Assert\GreaterThan(value: 0, message: 'Quantity must be greater than 0'),
                 ],
                 'price' => [
-                    new Assert\NotBlank(message: 'Цена не может быть пустой'),
-                    new Assert\Type(type: 'integer', message: 'Цена должна быть целым числом'),
-                    new Assert\GreaterThan(value: 0, message: 'Цена должна быть больше 0'),
+                    new Assert\NotBlank(message: 'Price cannot be empty'),
+                    new Assert\Type(type: 'integer', message: 'Price must be an integer'),
+                    new Assert\GreaterThan(value: 0, message: 'Price must be greater than 0'),
                 ],
                 'currency' => [
-                    new Assert\NotBlank(message: 'Валюта не может быть пустой'),
-                    new Assert\Currency(message: 'Валюта должна быть в формате ISO 4217'),
+                    new Assert\NotBlank(message: 'Currency cannot be empty'),
+                    new Assert\Currency(message: 'Currency must be in ISO format 4217'),
                 ],
             ]),
         ])]
-        public array $items
+        public array $items,
     ) {
     }
 
@@ -53,7 +53,7 @@ final readonly class CreateOrderRequest
     public function getItems(): array
     {
         return array_map(
-            fn(array $item): OrderItem => OrderItem::fromArray([
+            fn (array $item): OrderItem => OrderItem::fromArray([
                 'product_id' => ProductId::fromString((string) $item['product_id']),
                 'quantity' => $item['quantity'],
                 'money' => Money::fromAmount($item['price'], $item['currency']),

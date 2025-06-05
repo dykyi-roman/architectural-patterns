@@ -26,7 +26,7 @@ final class ChangeOrderStatusAction extends AbstractController
     #[Route('/orders/{orderId}/status', name: 'change_status', methods: ['PATCH'])]
     public function __invoke(
         string $orderId,
-        #[MapRequestPayload] ChangeOrderStatusRequest $request
+        #[MapRequestPayload] ChangeOrderStatusRequest $request,
     ): JsonResponse {
         $this->applicationService->command(
             new ChangeOrderStatusCommand(
@@ -35,6 +35,6 @@ final class ChangeOrderStatusAction extends AbstractController
             ),
         );
 
-        return new JsonResponse(['message' => 'Статус заказа успешно обновлен'], Response::HTTP_OK);
+        return new JsonResponse(['message' => 'Order status updated successfully'], Response::HTTP_OK);
     }
 }

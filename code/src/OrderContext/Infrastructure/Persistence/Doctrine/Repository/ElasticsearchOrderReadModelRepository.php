@@ -10,26 +10,15 @@ use OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
-use RuntimeException;
 
-/**
- * Реализация репозитория для чтения данных о заказах через Elasticsearch
- */
 final readonly class ElasticsearchOrderReadModelRepository implements OrderReadModelRepositoryInterface
 {
-    /**
-     * @param Client $client Клиент Elasticsearch
-     * @param string $indexName Имя индекса в Elasticsearch
-     */
     public function __construct(
         private Client $client,
-        private string $indexName = 'orders'
+        private string $indexName,
     ) {
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findById(OrderId $orderId): ?array
     {
         try {
@@ -39,27 +28,23 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             ];
 
             $response = $this->client->get($params)->asArray();
-            
+
             if (isset($response['found']) && $response['found']) {
                 return $response['_source'];
             }
-            
+
             return null;
         } catch (ClientResponseException $e) {
-            // Если документ не найден, Elasticsearch выбрасывает исключение 404
-            if ($e->getCode() === 404) {
+            if (404 === $e->getCode()) {
                 return null;
             }
-            
-            throw new RuntimeException("Ошибка при поиске заказа в Elasticsearch: {$e->getMessage()}", 0, $e);
+
+            throw new \RuntimeException("Error while searching for order in Elasticsearch: {$e->getMessage()}", 0, $e);
         } catch (\Throwable $e) {
-            throw new RuntimeException("Ошибка при поиске заказа в Elasticsearch: {$e->getMessage()}", 0, $e);
+            throw new \RuntimeException("Error while searching for order in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByCustomerId(CustomerId $customerId, int $offset = 0, int $limit = 20): array
     {
         try {
@@ -82,20 +67,13 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             ];
 
             $response = $this->client->search($params)->asArray();
-            
+
             return $this->extractHitsFromResponse($response);
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при поиске заказов клиента в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error while searching customer orders in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function findByStatus(OrderStatus $status, int $offset = 0, int $limit = 20): array
     {
         try {
@@ -118,20 +96,13 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             ];
 
             $response = $this->client->search($params)->asArray();
-            
+
             return $this->extractHitsFromResponse($response);
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при поиске заказов по статусу в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error when searching orders by status in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function count(): int
     {
         try {
@@ -145,84 +116,114 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
             ];
 
             $response = $this->client->count($params)->asArray();
-            
+
             return $response['count'] ?? 0;
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при подсчете заказов в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error while counting orders in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function findAll(int $offset = 0, int $limit = 20): array
-    {
+    public function findAll(
+        array $filters = [],
+        int $page = 1,
+        int $limit = 20,
+        ?string $sortBy = null,
+        string $sortDirection = 'desc',
+    ): array {
         try {
+            $offset = ($page - 1) * $limit;
+            $query = [];
+
+            if (!empty($filters)) {
+                $filterClauses = [];
+
+                foreach ($filters as $field => $value) {
+                    if (null !== $value && '' !== $value) {
+                        if ('status' === $field) {
+                            $filterClauses[] = ['term' => [$field => $value]];
+                        } elseif ('customer_id' === $field) {
+                            $filterClauses[] = ['term' => [$field => $value]];
+                        } else {
+                            $filterClauses[] = ['match' => [$field => $value]];
+                        }
+                    }
+                }
+
+                if (!empty($filterClauses)) {
+                    $query = [
+                        'bool' => [
+                            'must' => $filterClauses,
+                        ],
+                    ];
+                }
+            }
+
+            if (empty($query)) {
+                $query = ['match_all' => new \stdClass()];
+            }
+
+            $sortField = $sortBy ?: 'created_at';
+            $sort = [
+                $sortField => [
+                    'order' => $sortDirection,
+                ],
+            ];
+
             $params = [
                 'index' => $this->indexName,
                 'body' => [
-                    'query' => [
-                        'match_all' => new \stdClass(),
-                    ],
-                    'sort' => [
-                        'created_at' => [
-                            'order' => 'desc',
-                        ],
-                    ],
+                    'query' => $query,
+                    'sort' => $sort,
                     'from' => $offset,
                     'size' => $limit,
                 ],
             ];
 
-            $response = $this->client->search($params)->asArray();
-            
-            return $this->extractHitsFromResponse($response);
+            $searchResponse = $this->client->search($params)->asArray();
+            $items = $this->extractHitsFromResponse($searchResponse);
+
+            $countParams = [
+                'index' => $this->indexName,
+                'body' => [
+                    'query' => $query,
+                ],
+            ];
+
+            $countResponse = $this->client->count($countParams)->asArray();
+            $total = $countResponse['count'] ?? 0;
+
+            return [
+                'items' => $items,
+                'total' => $total,
+            ];
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при поиске всех заказов в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error while searching all orders in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
     /**
-     * Индексирует или обновляет заказ в Elasticsearch
+     * @param array<string, mixed> $orderData
      *
-     * @param array<string, mixed> $orderData Данные заказа
-     * @return void
-     * @throws RuntimeException Если возникла ошибка при индексации
+     * @throws \RuntimeException
      */
     public function index(array $orderData): void
     {
         try {
             $params = [
                 'index' => $this->indexName,
-                'id' => $orderData['id'],
+                'id' => $orderData['order_id'],
                 'body' => $orderData,
-                'refresh' => true, // Делаем документ сразу доступным для поиска
+                'refresh' => true, // Make the document immediately searchable
             ];
 
             $this->client->index($params);
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при индексации заказа в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error indexing order in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
     /**
-     * Удаляет заказ из Elasticsearch
-     *
-     * @param OrderId $orderId Идентификатор заказа
-     * @return void
-     * @throws RuntimeException Если возникла ошибка при удалении
+     * @throws \RuntimeException
      */
     public function delete(OrderId $orderId): void
     {
@@ -235,42 +236,27 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
 
             $this->client->delete($params);
         } catch (ClientResponseException $e) {
-            // Игнорируем ошибку, если документ не найден
-            if ($e->getCode() === 404) {
+            if (404 === $e->getCode()) {
                 return;
             }
-            
-            throw new RuntimeException(
-                "Ошибка при удалении заказа из Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+
+            throw new \RuntimeException("Error deleting order from Elasticsearch: {$e->getMessage()}", 0, $e);
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при удалении заказа из Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error deleting order from Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
     /**
-     * Создает индекс заказов в Elasticsearch
-     *
-     * @return void
-     * @throws RuntimeException Если возникла ошибка при создании индекса
+     * @throws \RuntimeException
      */
     public function createIndex(): void
     {
         try {
-            // Проверяем, существует ли индекс
             $indexExists = $this->client->indices()->exists(['index' => $this->indexName])->asBool();
-            
             if ($indexExists) {
                 return;
             }
-            
-            // Определяем маппинг для индекса
+
             $params = [
                 'index' => $this->indexName,
                 'body' => [
@@ -302,27 +288,22 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                     ],
                 ],
             ];
-            
+
             $this->client->indices()->create($params);
         } catch (\Throwable $e) {
-            throw new RuntimeException(
-                "Ошибка при создании индекса заказов в Elasticsearch: {$e->getMessage()}",
-                0,
-                $e
-            );
+            throw new \RuntimeException("Error creating orders index in Elasticsearch: {$e->getMessage()}", 0, $e);
         }
     }
 
     /**
-     * Извлекает результаты поиска из ответа Elasticsearch
+     * @param array<string, mixed> $response
      *
-     * @param array<string, mixed> $response Ответ от Elasticsearch
-     * @return array<array<string, mixed>> Массив документов
+     * @return array<array<string, mixed>>
      */
     private function extractHitsFromResponse(array $response): array
     {
         $result = [];
-        
+
         if (isset($response['hits']) && isset($response['hits']['hits'])) {
             foreach ($response['hits']['hits'] as $hit) {
                 if (isset($hit['_source'])) {
@@ -330,7 +311,7 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                 }
             }
         }
-        
+
         return $result;
     }
 }

@@ -24,21 +24,21 @@ final readonly class DoctrineTransactionService implements TransactionServiceInt
         if (!$isAlreadyInTransaction) {
             $this->connection->beginTransaction();
         }
-        
+
         try {
             $result = $callback();
 
             if (!$isAlreadyInTransaction) {
                 $this->connection->commit();
             }
-            
+
             return $result;
         } catch (\Throwable $exception) {
             // If we are not in a transaction, rollback
             if (!$isAlreadyInTransaction && $this->connection->isTransactionActive()) {
                 $this->connection->rollBack();
             }
-            
+
             throw $exception;
         }
     }

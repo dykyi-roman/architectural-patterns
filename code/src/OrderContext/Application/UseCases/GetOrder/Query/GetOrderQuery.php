@@ -7,18 +7,15 @@ namespace OrderContext\Application\UseCases\GetOrder\Query;
 use OrderContext\DomainModel\ValueObject\OrderId;
 
 /**
- * @see \OrderContext\Application\UseCases\GetOrder\Query\GetOrderQueryHandler
+ * @see GetOrderQueryHandler
  */
 final readonly class GetOrderQuery
 {
     public function __construct(
-        private OrderId $orderId
+        private OrderId $orderId,
     ) {
     }
 
-    /**
-     * Returns order identifier
-     */
     public function getOrderId(): OrderId
     {
         return $this->orderId;

@@ -14,7 +14,7 @@ final readonly class ChangeOrderStatusCommand
 {
     public function __construct(
         private OrderId $orderId,
-        private OrderStatus $newStatus
+        private OrderStatus $newStatus,
     ) {
     }
 

@@ -8,15 +8,10 @@ use Shared\DomainModel\Event\DomainEventInterface;
 
 abstract readonly class AbstractDomainEvent implements DomainEventInterface
 {
-    /**
-     * @param string $eventId Уникальный идентификатор события
-     * @param \DateTimeImmutable $occurredOn Дата и время возникновения события
-     * @param string $aggregateId Идентификатор агрегата, который вызвал событие
-     */
     public function __construct(
         private string $eventId,
         private \DateTimeImmutable $occurredOn,
-        private string $aggregateId
+        private string $aggregateId,
     ) {
     }
 

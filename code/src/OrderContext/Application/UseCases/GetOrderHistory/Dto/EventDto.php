@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace OrderContext\Application\UseCases\GetOrderHistory\Dto;
 
-use DateTimeInterface;
-
 final readonly class EventDto implements \JsonSerializable
 {
     public function __construct(
         private string $eventId,
-        private DateTimeInterface $occurredOn,
+        private \DateTimeInterface $occurredOn,
         private string $eventName,
         private array $eventData,
     ) {

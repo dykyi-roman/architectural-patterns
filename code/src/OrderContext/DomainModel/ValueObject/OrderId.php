@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace OrderContext\DomainModel\ValueObject;
 
-use InvalidArgumentException;
-use Stringable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Embeddable]
-final readonly class OrderId implements Stringable
+final readonly class OrderId implements \Stringable
 {
     #[ORM\Column(name: 'id', type: 'string', length: 36)]
     private function __construct(
-        private string $value
+        private string $value,
     ) {
         if (empty($value)) {
-            throw new InvalidArgumentException('OrderId не может быть пустым');
+            throw new \InvalidArgumentException('OrderId cannot be empty');
         }
     }
 

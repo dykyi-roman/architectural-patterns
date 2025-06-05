@@ -10,13 +10,9 @@ use Psr\Log\LoggerInterface;
 
 final readonly class OrderStatusChangedEventHandler
 {
-    /**
-     * @param ElasticsearchOrderReadModelRepository $readModelRepository
-     * @param LoggerInterface $logger
-     */
     public function __construct(
         private ElasticsearchOrderReadModelRepository $readModelRepository,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -24,37 +20,53 @@ final readonly class OrderStatusChangedEventHandler
     {
         $orderId = $event->getOrderId()->toString();
         $this->logger->info(
-            'Обработка события изменения статуса заказа для обновления read-модели',
+            'Processing the order status change event to update the read model',
             [
                 'order_id' => $orderId,
                 'previous_status' => $event->getPreviousStatus()->value,
-                'new_status' => $event->getNewStatus()->value
+                'new_status' => $event->getNewStatus()->value,
             ]
         );
 
-        // Получаем текущие данные заказа из Elasticsearch
         $orderData = $this->readModelRepository->findById($event->getOrderId());
-        
-        if ($orderData === null) {
+        if (null === $orderData) {
             $this->logger->warning(
-                'Заказ не найден в read-модели при обновлении статуса',
+                'Order not found in read model when updating status',
                 ['order_id' => $orderId]
             );
+
             return;
         }
 
-        // Обновляем статус и дату обновления
         $orderData['status'] = $event->getNewStatus()->value;
         $orderData['updated_at'] = $event->getOccurredOn()->format('c');
 
-        // Сохраняем обновленные данные в Elasticsearch
-        $this->readModelRepository->index($orderData);
+        try {
+            $data = $event->jsonSerialize();
+            $this->logger->debug(
+                'Data to index in Elasticsearch',
+                ['data' => $data]
+            );
+
+            $this->readModelRepository->index($orderData);
+        } catch (\Throwable $throwable) {
+            $this->logger->error(
+                'Error indexing order in Elasticsearch',
+                [
+                    'order_id' => $event->getOrderId()->toString(),
+                    'error' => $throwable->getMessage(),
+                    'trace' => $throwable->getTraceAsString(),
+                ]
+            );
+
+            throw $throwable;
+        }
 
         $this->logger->info(
-            'Статус заказа успешно обновлен в read-модели',
+            'Order status successfully updated in read model',
             [
                 'order_id' => $orderId,
-                'new_status' => $event->getNewStatus()->value
+                'new_status' => $event->getNewStatus()->value,
             ]
         );
     }
