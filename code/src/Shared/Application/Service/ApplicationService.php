@@ -40,7 +40,6 @@ final readonly class ApplicationService
         } catch (DomainException $exception) {
             throw new ApplicationException(get_class($query), $exception->getErrorCode(), 'Query execution failed', $exception->context, $exception);
         } catch (\Throwable $exception) {
-            dump($exception->getMessage()); die();
             throw new ApplicationException(get_class($query), GeneralErrorCode::UNEXPECTED_ERROR, 'Query execution failed', [], $exception);
         }
     }

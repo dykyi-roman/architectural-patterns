@@ -7,7 +7,7 @@ namespace OrderContext\Presentation\Api\Response;
 final readonly class OrderResponse implements \JsonSerializable
 {
     /**
-     * @param array<string, mixed> $totalAmount
+     * @param array<string, mixed>        $totalAmount
      * @param array<array<string, mixed>> $items
      */
     public function __construct(

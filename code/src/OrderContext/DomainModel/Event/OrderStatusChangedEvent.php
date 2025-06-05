@@ -6,17 +6,18 @@ namespace OrderContext\DomainModel\Event;
 
 use OrderContext\DomainModel\Enum\OrderStatus;
 use OrderContext\DomainModel\ValueObject\OrderId;
+use Shared\DomainModel\Event\AbstractDomainEvent;
 
 final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
 {
     public function __construct(
         string $eventId,
-        \DateTimeImmutable $occurredOn,
+        \DateTimeImmutable $occurredAt,
         private OrderId $orderId,
         private OrderStatus $previousStatus,
         private OrderStatus $newStatus,
     ) {
-        parent::__construct($eventId, $occurredOn, $orderId->toString());
+        parent::__construct($eventId, $orderId->toString(), $occurredAt);
     }
 
     public function getOrderId(): OrderId
@@ -55,10 +56,5 @@ final readonly class OrderStatusChangedEvent extends AbstractDomainEvent
             OrderStatus::fromString($data['previous_status']),
             OrderStatus::fromString($data['new_status'])
         );
-    }
-
-    public function getOccurredAt(): \DateTimeImmutable
-    {
-        return $this->getOccurredOn();
     }
 }

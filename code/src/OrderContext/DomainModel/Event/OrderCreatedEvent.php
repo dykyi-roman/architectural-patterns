@@ -7,6 +7,7 @@ namespace OrderContext\DomainModel\Event;
 use OrderContext\DomainModel\ValueObject\CustomerId;
 use OrderContext\DomainModel\ValueObject\Money;
 use OrderContext\DomainModel\ValueObject\OrderId;
+use Shared\DomainModel\Event\AbstractDomainEvent;
 
 final readonly class OrderCreatedEvent extends AbstractDomainEvent
 {
@@ -15,13 +16,13 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
      */
     public function __construct(
         string $eventId,
-        \DateTimeImmutable $occurredOn,
+        \DateTimeImmutable $occurredAt,
         private OrderId $orderId,
         private CustomerId $customerId,
         private Money $totalAmount,
         private array $items,
     ) {
-        parent::__construct($eventId, $occurredOn, $orderId->toString());
+        parent::__construct($eventId, $orderId->toString(), $occurredAt);
     }
 
     public function getOrderId(): OrderId
@@ -52,11 +53,17 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
         return array_merge(parent::jsonSerialize(), [
             'order_id' => $this->orderId->toString(),
             'customer_id' => $this->customerId->toString(),
-            'total_amount' => [
-                'amount' => $this->totalAmount->getAmount(),
-                'currency' => $this->totalAmount->getCurrency(),
-            ],
-            'items' => $this->items,
+            'total_amount' => $this->totalAmount->jsonSerialize(),
+            'items' => array_map(static function ($item) {
+                return [
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => [
+                        'amount' => $item['price']['amount'],
+                        'currency' => $item['price']['currency'],
+                    ],
+                ];
+            }, $this->items),
         ]);
     }
 
@@ -67,18 +74,29 @@ final readonly class OrderCreatedEvent extends AbstractDomainEvent
      */
     public static function fromArray(array $data): static
     {
+        $totalAmount = null;
+        if (isset($data['total_amount'])) {
+            if (is_array($data['total_amount'])) {
+                $totalAmount = Money::fromAmount(
+                    $data['total_amount']['amount'],
+                    $data['total_amount']['currency']
+                );
+            } elseif (is_numeric($data['total_amount'])) {
+                $totalAmount = Money::fromAmount((int) $data['total_amount'], 'USD');
+            } else {
+                throw new \InvalidArgumentException('Invalid total_amount format');
+            }
+        } else {
+            $totalAmount = Money::fromAmount(0, 'USD');
+        }
+
         return new self(
             $data['event_id'],
             new \DateTimeImmutable($data['occurred_at']),
             OrderId::fromString($data['order_id']),
             CustomerId::fromString($data['customer_id']),
-            Money::fromAmount($data['total_amount']['amount'], $data['total_amount']['currency']),
-            $data['items']
+            $totalAmount,
+            $data['items'] ?? []
         );
-    }
-
-    public function getOccurredAt(): \DateTimeImmutable
-    {
-        return $this->getOccurredOn();
     }
 }

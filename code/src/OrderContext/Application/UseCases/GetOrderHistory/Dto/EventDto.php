@@ -19,7 +19,7 @@ final readonly class EventDto implements \JsonSerializable
         return [
             'event_id' => $this->eventId,
             'occurred_at' => $this->occurredOn->format('c'),
-            'event_name' => $this->eventName,
+            'event_type' => $this->eventName,
             'data' => $this->eventData,
         ];
     }

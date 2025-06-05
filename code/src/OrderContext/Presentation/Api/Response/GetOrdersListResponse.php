@@ -10,9 +10,6 @@ final readonly class GetOrdersListResponse implements ResponderInterface
 {
     /**
      * @param array<array<string, mixed>> $items
-     * @param int $total
-     * @param int $page
-     * @param int $limit
      */
     public function __construct(
         private array $items,

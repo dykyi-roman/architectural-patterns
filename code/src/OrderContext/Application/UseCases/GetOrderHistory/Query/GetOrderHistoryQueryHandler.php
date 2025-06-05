@@ -33,7 +33,7 @@ final readonly class GetOrderHistoryQueryHandler
             array_map(
                 static fn (DomainEventInterface $event) => new EventDto(
                     $event->getEventId(),
-                    $event->getOccurredOn(),
+                    $event->getOccurredAt(),
                     $event->getEventName(),
                     $event->jsonSerialize(),
                 ),

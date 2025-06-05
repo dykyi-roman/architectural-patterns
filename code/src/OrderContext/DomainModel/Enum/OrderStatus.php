@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OrderContext\DomainModel\Enum;
 
-enum OrderStatus: string
+enum OrderStatus: string implements \JsonSerializable
 {
     case CREATED = 'created';
     case PAID = 'paid';
@@ -27,27 +27,27 @@ enum OrderStatus: string
 
     public function isCreated(): bool
     {
-        return $this === self::CREATED;
+        return self::CREATED === $this;
     }
 
     public function isPaid(): bool
     {
-        return $this === self::PAID;
+        return self::PAID === $this;
     }
 
     public function isCancelled(): bool
     {
-        return $this === self::CANCELLED;
+        return self::CANCELLED === $this;
     }
 
     public function canBePaid(): bool
     {
-        return $this === self::CREATED;
+        return self::CREATED === $this;
     }
 
     public function canBeCancelled(): bool
     {
-        return $this === self::CREATED;
+        return self::CREATED === $this;
     }
 
     /**
@@ -56,5 +56,10 @@ enum OrderStatus: string
     public static function getValues(): array
     {
         return array_column(self::cases(), 'value');
+    }
+
+    public function jsonSerialize(): string
+    {
+        return $this->value;
     }
 }

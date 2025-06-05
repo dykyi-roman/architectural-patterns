@@ -7,7 +7,7 @@ namespace OrderContext\DomainModel\ValueObject;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Embeddable]
-final readonly class Money
+final readonly class Money implements \JsonSerializable
 {
     /**
      * @throws \InvalidArgumentException
@@ -136,5 +136,16 @@ final readonly class Money
         $amountAsFloat = $this->getAmountAsFloat();
 
         return sprintf('%.2f %s', $amountAsFloat, $this->currency);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'amount' => $this->amount,
+            'currency' => $this->currency,
+        ];
     }
 }

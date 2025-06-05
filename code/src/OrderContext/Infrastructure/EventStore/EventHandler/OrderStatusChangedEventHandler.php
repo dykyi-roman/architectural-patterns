@@ -39,7 +39,7 @@ final readonly class OrderStatusChangedEventHandler
         }
 
         $orderData['status'] = $event->getNewStatus()->value;
-        $orderData['updated_at'] = $event->getOccurredOn()->format('c');
+        $orderData['updated_at'] = $event->getOccurredAt()->format('c');
 
         try {
             $data = $event->jsonSerialize();

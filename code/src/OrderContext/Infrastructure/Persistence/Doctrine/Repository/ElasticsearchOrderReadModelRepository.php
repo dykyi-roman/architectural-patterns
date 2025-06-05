@@ -265,6 +265,12 @@ final readonly class ElasticsearchOrderReadModelRepository implements OrderReadM
                             'id' => ['type' => 'keyword'],
                             'customer_id' => ['type' => 'keyword'],
                             'status' => ['type' => 'keyword'],
+                            'total_amount' => [
+                                'properties' => [
+                                    'amount' => ['type' => 'integer'],
+                                    'currency' => ['type' => 'keyword'],
+                                ],
+                            ],
                             'items' => [
                                 'type' => 'nested',
                                 'properties' => [
