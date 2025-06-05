@@ -8,18 +8,16 @@ use OrderContext\Application\UseCases\ChangeOrderStatus\Command\ChangeOrderStatu
 use OrderContext\DomainModel\ValueObject\OrderId;
 use OrderContext\DomainModel\ValueObject\OrderStatus;
 use OrderContext\Presentation\Api\Request\ChangeOrderStatusRequest;
+use OrderContext\Presentation\Api\Response\ChangeOrderStatusResponse;
 use Shared\Application\Service\ApplicationService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/v1', name: 'api_orders_')]
-final class ChangeOrderStatusAction extends AbstractController
+final readonly class ChangeOrderStatusAction
 {
     public function __construct(
-        private readonly ApplicationService $applicationService,
+        private ApplicationService $applicationService,
     ) {
     }
 
@@ -27,7 +25,7 @@ final class ChangeOrderStatusAction extends AbstractController
     public function __invoke(
         string $orderId,
         #[MapRequestPayload] ChangeOrderStatusRequest $request,
-    ): JsonResponse {
+    ): ChangeOrderStatusResponse {
         $this->applicationService->command(
             new ChangeOrderStatusCommand(
                 OrderId::fromString($orderId),
@@ -35,6 +33,6 @@ final class ChangeOrderStatusAction extends AbstractController
             ),
         );
 
-        return new JsonResponse(['message' => 'Order status updated successfully'], Response::HTTP_OK);
+        return new ChangeOrderStatusResponse($orderId, $request->status);
     }
 }
