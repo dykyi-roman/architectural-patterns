@@ -1,214 +1,214 @@
-# Контекст заказов (OrderContext)
+# Order Context (OrderContext)
 
-## Единый язык (Ubiquitous Language)
+## Ubiquitous Language
 
-Данный документ описывает термины и концепции, используемые в контексте заказов. Единый язык помогает разработчикам и предметным экспертам говорить на одном языке и избегать недопонимания.
+This document describes terms and concepts used in the order context. Ubiquitous language helps developers and domain experts speak the same language and avoid misunderstandings.
 
-### Основные концепции и сущности
+### Core Concepts and Entities
 
-#### Заказ (Order)
-Центральная сущность в нашей предметной области. Заказ создается клиентом и содержит набор товаров. Заказ имеет уникальный идентификатор, статус и общую стоимость. Заказ является агрегатом (корнем агрегации) и инкапсулирует всю логику, связанную с его жизненным циклом.
+#### Order
+The central entity in our domain. An order is created by a customer and contains a set of items. The order has a unique identifier, status, and total cost. Order is an aggregate (root) that encapsulates all logic related to its lifecycle.
 
-#### Элемент заказа (OrderItem)
-Составная часть заказа, представляющая конкретный товар в определенном количестве и по определенной цене. Элемент заказа всегда принадлежит конкретному заказу и не может существовать отдельно от него.
+#### OrderItem
+A component of an order representing a specific product in a certain quantity and at a specific price. An order item always belongs to a specific order and cannot exist separately.
 
-#### Идентификатор заказа (OrderId)
-Уникальный идентификатор заказа, представленный в формате UUID. Используется для однозначной идентификации заказа в системе.
+#### OrderId
+A unique order identifier represented as a UUID. Used for unambiguous identification of an order in the system.
 
-#### Идентификатор клиента (CustomerId)
-Уникальный идентификатор клиента, которому принадлежит заказ. Представлен в формате UUID.
+#### CustomerId
+A unique customer identifier to whom the order belongs. Represented as a UUID.
 
-#### Идентификатор товара (ProductId)
-Уникальный идентификатор товара, который включен в заказ. Представлен в формате UUID.
+#### ProductId
+A unique product identifier included in the order. Represented as a UUID.
 
-#### Деньги (Money)
-Денежная сумма, состоящая из числового значения (amount) и валюты (currency). Используется для представления цен товаров и общей стоимости заказа.
+#### Money
+A monetary amount consisting of a numerical value (amount) and currency. Used to represent product prices and the total cost of an order.
 
-#### Статус заказа (OrderStatus)
-Состояние заказа в его жизненном цикле. Заказ может находиться в следующих состояниях:
-- **Создан (created)**: начальное состояние после создания заказа
-- **В обработке (processing)**: заказ принят и обрабатывается
-- **Завершен (completed)**: обработка заказа завершена, готов к отправке
-- **Отправлен (shipped)**: заказ отправлен клиенту
-- **Доставлен (delivered)**: заказ успешно доставлен клиенту
-- **Отменен (cancelled)**: заказ был отменен
+#### OrderStatus
+The state of an order in its lifecycle. An order can be in the following states:
+- **Created**: initial state after order creation
+- **Processing**: the order is accepted and being processed
+- **Completed**: order processing is completed, ready for shipping
+- **Shipped**: the order has been shipped to the customer
+- **Delivered**: the order has been successfully delivered to the customer
+- **Cancelled**: the order was cancelled
 
-### События домена
+### Domain Events
 
-#### Событие создания заказа (OrderCreatedEvent)
-Событие, которое генерируется при создании нового заказа. Содержит информацию о созданном заказе, включая его идентификатор, идентификатор клиента, элементы заказа и общую стоимость.
+#### OrderCreatedEvent
+An event generated when a new order is created. Contains information about the created order, including its identifier, customer identifier, order items, and total cost.
 
-#### Событие изменения статуса заказа (OrderStatusChangedEvent)
-Событие, которое генерируется при изменении статуса заказа. Содержит информацию о идентификаторе заказа, предыдущем и новом статусах.
+#### OrderStatusChangedEvent
+An event generated when the status of an order is changed. Contains information about the order identifier, previous status, and new status.
 
-### Репозитории
+### Repositories
 
-#### Репозиторий заказов (OrderRepository)
-Отвечает за сохранение и получение заказов из постоянного хранилища. Используется для операций записи в модели CQRS.
+#### OrderRepository
+Responsible for saving and retrieving orders from persistent storage. Used for write operations in the CQRS model.
 
-#### Репозиторий модели чтения заказов (OrderReadModelRepository)
-Отвечает за получение данных о заказах из хранилища, оптимизированного для чтения. Используется для операций чтения в модели CQRS.
+#### OrderReadModelRepository
+Responsible for retrieving order data from a read-optimized storage. Used for read operations in the CQRS model.
 
-### Архитектурные компоненты
+### Architectural Components
 
-#### Случаи использования (UseCases)
-Центральные компоненты архитектуры приложения, реализующие конкретные бизнес-сценарии. Каждый UseCase представляет собой отдельный модуль, содержащий команду/запрос и соответствующий обработчик. Основные случаи использования:
+#### UseCases
+Central components of the application architecture, implementing specific business scenarios. Each UseCase represents a separate module containing a command/request and its corresponding handler. Main use cases:
 
-- **CreateOrder**: Создание нового заказа
-- **ChangeOrderStatus**: Изменение статуса существующего заказа
-- **GetOrder**: Получение детальной информации о заказе
-- **GetOrdersList**: Получение списка заказов с фильтрацией и пагинацией
+- **CreateOrder**: Creating a new order
+- **ChangeOrderStatus**: Changing the status of an existing order
+- **GetOrder**: Retrieving detailed information about an order
+- **GetOrdersList**: Retrieving a list of orders with filtering and pagination
 
-#### Служба приложения заказов (OrderApplicationService)
-Координирует выполнение операций над заказами, обеспечивая единую точку входа для юз-кейсов. Делегирует выполнение команд и запросов соответствующим обработчикам через шину сообщений или напрямую.
+#### OrderApplicationService
+Coordinates the execution of operations on orders, providing a single entry point for use cases. Delegates command and query execution to corresponding handlers through a message bus or directly.
 
-#### API Action-контроллеры
-Входные точки REST API, которые принимают HTTP-запросы, преобразуют их в соответствующие команды или запросы и передают в OrderApplicationService для выполнения:
+#### API Action Controllers
+Entry points for REST API, accepting HTTP requests, converting them into corresponding commands or queries, and passing them to OrderApplicationService for execution:
 
-- **CreateOrderAction**: Создание заказа через API
-- **ChangeOrderStatusAction**: Изменение статуса заказа через API
-- **GetOrderAction**: Получение информации о заказе через API
-- **GetOrdersListAction**: Получение списка заказов через API
+- **CreateOrderAction**: Creating an order through API
+- **ChangeOrderStatusAction**: Changing the status of an order through API
+- **GetOrderAction**: Retrieving information about an order through API
+- **GetOrdersListAction**: Retrieving a list of orders through API
 
-### Команды и запросы (CQRS)
+### Commands and Queries (CQRS)
 
-#### Команда создания заказа (CreateOrderCommand)
-Команда для создания нового заказа. Содержит информацию, необходимую для создания заказа: идентификатор клиента и список товаров. Обрабатывается CreateOrderCommandHandler.
+#### CreateOrderCommand
+A command for creating a new order. Contains information necessary for creating an order: customer identifier and list of products. Handled by CreateOrderCommandHandler.
 
-#### Команда изменения статуса заказа (ChangeOrderStatusCommand)
-Команда для изменения статуса существующего заказа. Содержит идентификатор заказа и новый статус. Обрабатывается ChangeOrderStatusCommandHandler.
+#### ChangeOrderStatusCommand
+A command for changing the status of an existing order. Contains the order identifier and new status. Handled by ChangeOrderStatusCommandHandler.
 
-#### Запрос получения заказа (GetOrderQuery)
-Запрос для получения информации о конкретном заказе по его идентификатору. Обрабатывается GetOrderQueryHandler.
+#### GetOrderQuery
+A query for retrieving information about a specific order by its identifier. Handled by GetOrderQueryHandler.
 
-#### Запрос получения списка заказов (GetOrdersListQuery)
-Запрос для получения списка заказов с возможностью фильтрации по клиенту, статусу и другим параметрам. Поддерживает пагинацию и сортировку. Обрабатывается GetOrdersListQueryHandler.
+#### GetOrdersListQuery
+A query for retrieving a list of orders with filtering by customer, status, and other parameters. Supports pagination and sorting. Handled by GetOrdersListQueryHandler.
 
-### Интерфейсы контрактов
+### Contract Interfaces
 
 #### CommandInterface
-Базовый интерфейс для всех команд в системе. Маркирует объект как команду, выполняющую операцию записи.
+A base interface for all commands in the system. Marks an object as a command that performs a write operation.
 
 #### CommandHandlerInterface
-Интерфейс для обработчиков команд. Определяет метод __invoke, принимающий команду и выполняющий соответствующую бизнес-логику.
+An interface for command handlers. Defines the __invoke method, accepting a command and executing the corresponding business logic.
 
 #### QueryInterface
-Базовый интерфейс для всех запросов в системе. Маркирует объект как запрос, выполняющий операцию чтения.
+A base interface for all queries in the system. Marks an object as a query that performs a read operation.
 
 #### QueryHandlerInterface
-Интерфейс для обработчиков запросов. Определяет метод __invoke, принимающий запрос и возвращающий результат.
+An interface for query handlers. Defines the __invoke method, accepting a query and returning the result.
 
-### Инфраструктурные концепции
+### Infrastructure Concepts
 
-#### Хранилище событий (EventStore)
-Компонент, отвечающий за хранение всех доменных событий, связанных с заказами.
+#### EventStore
+A component responsible for storing all domain events related to orders.
 
-#### Паттерн Outbox
-Механизм, обеспечивающий надежную публикацию доменных событий во внешние системы после успешного завершения транзакции.
+#### Outbox Pattern
+A mechanism ensuring reliable publication of domain events to external systems after a successful transaction.
 
 ### Transactional Outbox Pattern
 
-#### Описание и принципы работы
-Transactional Outbox Pattern — это архитектурный паттерн, который решает проблему атомарности между операциями сохранения данных и публикации событий в распределенных системах. Он обеспечивает надежную доставку сообщений между сервисами в асинхронной коммуникации.
+#### Description and Principles
+Transactional Outbox Pattern is an architectural pattern that solves the problem of atomicity between data saving operations and event publishing in distributed systems. It ensures reliable message delivery between services in asynchronous communication.
 
-**Основные компоненты реализации:**
-- `OutboxEvent` — сущность, представляющая запись в таблице outbox_events
-- `OutboxPublisherInterface` — интерфейс для публикации событий через Outbox
-- `OutboxPublisher` — реализация интерфейса, сохраняющая события в таблицу outbox_events
-- `OutboxEventRepository` — репозиторий для работы с таблицей outbox_events
-- `OutboxEventProcessor` — сервис, обрабатывающий и публикующий события из таблицы outbox_events
+**Main Components of Implementation:**
+- `OutboxEvent` — an entity representing a record in the outbox_events table
+- `OutboxPublisherInterface` — an interface for publishing events through Outbox
+- `OutboxPublisher` — an implementation of the interface, saving events to the outbox_events table
+- `OutboxEventRepository` — a repository for working with the outbox_events table
+- `OutboxEventProcessor` — a service processing and publishing events from the outbox_events table
 
-#### Причины использования
-1. **Обеспечение атомарности** — сохранение данных (например, заказа) и запись события происходят в одной транзакции, что гарантирует согласованность.
-2. **Надежная доставка событий** — даже если брокер сообщений (RabbitMQ) временно недоступен, события не теряются, а сохраняются в базе данных.
-3. **Отделение основной бизнес-логики от инфраструктуры сообщений** — создание заказа не зависит от доступности брокера сообщений.
-4. **Сохранение порядка событий** — события публикуются в том же порядке, в котором они были созданы.
-5. **Повышение отказоустойчивости системы** — система продолжает функционировать даже при временных сбоях в коммуникации между сервисами.
+#### Reasons for Use
+1. **Ensuring Atomicity** — saving data (e.g., an order) and recording an event occur in a single transaction, ensuring consistency.
+2. **Reliable Event Delivery** — even if the message broker (RabbitMQ) is temporarily unavailable, events are not lost but saved in the database.
+3. **Separation of Main Business Logic from Messaging Infrastructure** — creating an order does not depend on the availability of the message broker.
+4. **Preserving the Order of Events** — events are published in the same order they were created.
+5. **Improving System Fault Tolerance** — the system continues to function even during temporary communication failures between services.
 
-#### Процесс работы
-1. Команда (например, `CreateOrderCommand`) обрабатывается соответствующим обработчиком.
-2. Обработчик выполняет бизнес-операцию (создание заказа) и сохраняет данные в репозитории.
-3. Создается доменное событие (например, `OrderCreatedEvent`).
-4. `OutboxPublisher` сохраняет событие в таблицу `outbox_events` в той же транзакции, что и основные данные.
-5. Отдельный процесс (`OutboxEventProcessor`) периодически проверяет таблицу `outbox_events` на наличие необработанных событий.
-6. Необработанные события публикуются в брокер сообщений (RabbitMQ).
-7. После успешной публикации события помечаются как обработанные.
-8. При возникновении ошибок публикации события остаются в таблице и будут повторно обработаны позже, с увеличением счетчика повторных попыток.
+#### Workflow
+1. A command (e.g., `CreateOrderCommand`) is handled by the corresponding handler.
+2. The handler performs the business operation (creating an order) and saves the data to the repository.
+3. A domain event (e.g., `OrderCreatedEvent`) is created.
+4. `OutboxPublisher` saves the event to the outbox_events table in the same transaction as the main data.
+5. A separate process (`OutboxEventProcessor`) periodically checks the outbox_events table for unprocessed events.
+6. Unprocessed events are published to the message broker (RabbitMQ).
+7. After successful publication, events are marked as processed.
+8. In case of publication errors, events remain in the table and will be reprocessed later, with an increased retry counter.
 
-## Взаимодействия и процессы
+## Interactions and Processes
 
-### Создание заказа
-1. Клиент отправляет запрос на создание заказа через API
-2. CreateOrderAction преобразует запрос в CreateOrderCommand
-3. OrderApplicationService передает команду в CreateOrderCommandHandler
-4. Обработчик команды создает новый заказ и генерирует событие OrderCreatedEvent
-5. Заказ сохраняется в репозитории заказов
-6. Событие сохраняется в хранилище событий и публикуется через Outbox
-7. Обработчик события обновляет модель чтения
+### Creating an Order
+1. The client sends a request to create an order through the API
+2. CreateOrderAction converts the request into a CreateOrderCommand
+3. OrderApplicationService passes the command to CreateOrderCommandHandler
+4. The command handler creates a new order and generates an OrderCreatedEvent
+5. The order is saved to the order repository
+6. The event is saved to the event store and published through Outbox
+7. The event handler updates the read model
 
-### Изменение статуса заказа
-1. Запрос на изменение статуса поступает через API
-2. ChangeOrderStatusAction преобразует запрос в ChangeOrderStatusCommand
-3. OrderApplicationService передает команду в ChangeOrderStatusCommandHandler
-4. Обработчик команды изменяет статус заказа и генерирует событие OrderStatusChangedEvent
-5. Обновленный заказ сохраняется в репозитории
-6. Событие сохраняется в хранилище событий и публикуется через Outbox
-7. Обработчик события обновляет модель чтения
+### Changing the Status of an Order
+1. A request to change the status is received through the API
+2. ChangeOrderStatusAction converts the request into a ChangeOrderStatusCommand
+3. OrderApplicationService passes the command to ChangeOrderStatusCommandHandler
+4. The command handler changes the order status and generates an OrderStatusChangedEvent
+5. The updated order is saved to the repository
+6. The event is saved to the event store and published through Outbox
+7. The event handler updates the read model
 
-### Получение информации о заказе
-1. Клиент отправляет запрос на получение заказа через API
-2. GetOrderAction преобразует запрос в GetOrderQuery
-3. OrderApplicationService передает запрос в GetOrderQueryHandler
-4. Обработчик запроса получает данные из репозитория модели чтения
-5. Данные преобразуются в DTO и возвращаются клиенту
+### Retrieving Information about an Order
+1. The client sends a request to retrieve an order through the API
+2. GetOrderAction converts the request into a GetOrderQuery
+3. OrderApplicationService passes the query to GetOrderQueryHandler
+4. The query handler retrieves data from the read model repository
+5. The data is converted to a DTO and returned to the client
 
-### Получение списка заказов
-1. Клиент отправляет запрос на получение списка заказов с фильтрами через API
-2. GetOrdersListAction преобразует запрос в GetOrdersListQuery
-3. OrderApplicationService передает запрос в GetOrdersListQueryHandler
-4. Обработчик запроса получает данные из репозитория модели чтения с учетом фильтров
-5. Данные преобразуются в DTO с пагинацией и возвращаются клиенту
+### Retrieving a List of Orders
+1. The client sends a request to retrieve a list of orders with filters through the API
+2. GetOrdersListAction converts the request into a GetOrdersListQuery
+3. OrderApplicationService passes the query to GetOrdersListQueryHandler
+4. The query handler retrieves data from the read model repository with filters applied
+5. The data is converted to a DTO with pagination and returned to the client
 
-## Технологический стек
+## Technology Stack
 
-- **Язык программирования**: PHP 8.3 с declare(strict_types=1)
-- **Фреймворк**: Symfony 7.2
-- **Архитектурные паттерны**: DDD, CQRS, Clean Architecture
-- **Шаблоны проектирования**: Repository, Factory, Value Object, Command/Query, Handler
-- **Организация кода**: UseCases по бизнес-функциям
+- **Programming Language**: PHP 8.3 with declare(strict_types=1)
+- **Framework**: Symfony 7.2
+- **Architectural Patterns**: DDD, CQRS, Clean Architecture
+- **Design Patterns**: Repository, Factory, Value Object, Command/Query, Handler
+- **Code Organization**: UseCases by business functions
 
 ## Notes
 
-EventStore и Outbox Pattern: разница и назначение
-Вы подняли очень важный вопрос. EventStore и Outbox — это два разных паттерна, которые часто используются вместе, но имеют разные цели:
+EventStore and Outbox Pattern: difference and purpose
+You raised a very important question. EventStore and Outbox are two different patterns, often used together, but with different goals:
 
-EventStore: хранение истории событий
-EventStore служит для сохранения полной истории всех доменных событий в системе. Это реализация паттерна Event Sourcing, где:
+EventStore: storing event history
+EventStore serves to store the entire history of all domain events in the system. This is an implementation of the Event Sourcing pattern, where:
 
-Основная цель: сохранение всей истории изменений агрегата (заказа)
-Направленность: внутренняя потребность системы для сохранения истории, аудита и возможной реконструкции состояния
-Ответственность: хранение всех событий в хронологическом порядке
-Типичные сценарии использования EventStore:
-Восстановление состояния агрегата из событий
-Аудит (кто и когда изменил статус заказа)
-Временные запросы (как выглядел заказ на определенный момент времени)
-Аналитика и построение отчетов
-Outbox: гарантированная доставка событий
-Outbox служит для гарантированной доставки сообщений внешним подписчикам:
+Main goal: storing the entire history of changes to an aggregate (order)
+Orientation: internal system need for storing history, auditing, and possible state reconstruction
+Responsibility: storing all events in chronological order
+Typical EventStore usage scenarios:
+Reconstructing the state of an aggregate from events
+Auditing (who and when changed the order status)
+Temporal queries (what the order looked like at a specific point in time)
+Analytics and reporting
+Outbox: guaranteed event delivery
+Outbox serves to ensure the reliable delivery of messages to external subscribers:
 
-Основная цель: обеспечение надежной публикации событий в другие сервисы
-Направленность: интеграция между сервисами и системами
-Ответственность: атомарная транзакция сохранения состояния и публикации событий
-Разница в применении
-В нашем коде EventStore не используется напрямую в обработчиках команд, потому что:
+Main goal: ensuring the reliable publication of events to other services
+Orientation: integration between services and systems
+Responsibility: atomic transaction of saving state and publishing events
+Difference in application
+In our code, EventStore is not used directly in command handlers because:
 
-Мы не реализуем полный Event Sourcing, а используем традиционную модель сохранения состояния
-Наш фокус — на надежной публикации событий через Outbox, а не на построении агрегатов из событий
-Возможно, EventStore планировался для будущих расширений или для специфических случаев использования
-Возможные сценарии использования EventStore в OrderContext
-EventStore мог бы использоваться в следующих случаях:
+We do not implement full Event Sourcing, but use a traditional state-saving model
+Our focus is on reliable event publication through Outbox, not on building aggregates from events
+Perhaps EventStore was planned for future extensions or specific use cases
+Possible EventStore usage scenarios in OrderContext
+EventStore could be used in the following cases:
 
-История заказа: хранение всех событий для предоставления клиенту полной хронологии изменений
-Аудит: сохранение информации о том, кто и когда изменил статус заказа
-Дебаггинг: анализ последовательности событий для выявления проблем
-Реконструкция состояния: восстановление состояния заказа на любой момент времени
+Order history: storing all events to provide the client with a complete chronology of changes
+Auditing: storing information about who and when changed the order status
+Debugging: analyzing the sequence of events to identify issues
+State reconstruction: restoring the state of an order at any point in time

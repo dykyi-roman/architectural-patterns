@@ -1,7 +1,40 @@
 # Context Map
 
-| Context | Description |
-|---------|-------------|
+The application is divided into multiple bounded contexts, each responsible for a specific business domain. The Context Map describes how these contexts interact with each other.
+
+| Context        | Description                                                                                     |
+|----------------|-------------------------------------------------------------------------------------------------|
+| OrderContext   | Manages order lifecycle, statuses, and history. Core business entity for e-commerce operations. |
+| PaymentContext | Handles payment processing, transaction management, and financial operations.                   |
+
+## Context Interactions
+
+### OrderContext → PaymentContext
+- **Communication Pattern**: Event-based communication
+- **Integration Method**: Asynchronous messaging via RabbitMQ
+- **Events Flow**: 
+  - OrderContext publishes `OrderStatusChangedEvent`
+  - PaymentContext subscribes to these events and processes them
+- **Relationship Type**: Customer-Supplier (PaymentContext consumes events from OrderContext)
+
+### Event Communication Mechanism
+1. OrderContext generates domain events during business operations (e.g., order status changes)
+2. Events are published to a message queue using the Transactional Outbox pattern
+3. PaymentContext subscribes to relevant events
+4. Each context maintains its own data while reacting to events from other contexts
+5. This approach ensures loose coupling between contexts while maintaining business process integrity
+
+# API Routes
+
+The application exposes the following REST API endpoints:
+
+| Method | URL                                           | Description                       |
+|--------|-----------------------------------------------|-----------------------------------|
+| POST   | /ordercontext/api/v1/orders                   | Create a new order                |
+| GET    | /ordercontext/api/v1/orders/{orderId}         | Get order details by ID           |
+| GET    | /ordercontext/api/v1/orders                   | Get list of orders with filtering |
+| PATCH  | /ordercontext/api/v1/orders/{orderId}/status  | Change order status               |
+| GET    | /ordercontext/api/v1/orders/{orderId}/history | Get order history                 |
 
 # Architecture
 

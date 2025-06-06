@@ -1,0 +1,7 @@
+framework:
+    messenger:
+        routing:
+            # events
+            OrderContext\DomainModel\Event\OrderStatusChangedEvent: sync
+            # commands
+            PaymentContext\Application\UseCases\UpdateInventory\Command\UpdateInventoryCommand: sync
