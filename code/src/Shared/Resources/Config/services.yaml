@@ -82,7 +82,7 @@ services:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
 
-    Shared\Infrastructure\EventStore\EventStoreInterface:
+    Shared\DomainModel\Service\EventStoreInterface:
         class: Shared\Infrastructure\EventStore\Repository\DoctrineEventStore
 
     # Services

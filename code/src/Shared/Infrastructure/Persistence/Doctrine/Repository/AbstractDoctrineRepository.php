@@ -7,8 +7,8 @@ namespace Shared\Infrastructure\Persistence\Doctrine\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
 use Shared\DomainModel\Entity\AggregateRootInterface;
+use Shared\DomainModel\Service\EventStoreInterface;
 use Shared\DomainModel\Service\MessageBusInterface;
-use Shared\Infrastructure\EventStore\EventStoreInterface;
 use Shared\Infrastructure\Outbox\Publisher\OutboxPublisherInterface;
 
 abstract readonly class AbstractDoctrineRepository

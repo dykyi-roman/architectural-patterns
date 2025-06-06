@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OrderContext\Presentation\Console\Command;
 
+use OrderContext\DomainModel\Repository\OrderReadModelRepositoryInterface;
 use OrderContext\Infrastructure\Persistence\Doctrine\Repository\ElasticsearchOrderReadModelRepository;
 use Psr\Log\LoggerInterface;
 use Shared\Presentation\Console\Command\AbstractConsoleCommand;
@@ -19,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class ElasticsearchIndexInitCommand extends AbstractConsoleCommand
 {
     public function __construct(
-        private readonly ElasticsearchOrderReadModelRepository $orderRepository,
+        private readonly OrderReadModelRepositoryInterface $orderRepository,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();

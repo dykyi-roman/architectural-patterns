@@ -7,7 +7,7 @@ namespace Shared\Infrastructure\EventStore\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Types\Types;
 use Shared\DomainModel\Event\DomainEventInterface;
-use Shared\Infrastructure\EventStore\EventStoreInterface;
+use Shared\DomainModel\Service\EventStoreInterface;
 
 final readonly class DoctrineEventStore implements EventStoreInterface
 {

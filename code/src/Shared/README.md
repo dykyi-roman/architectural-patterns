@@ -221,11 +221,13 @@ and the ability to reconstruct the state of any aggregate at any point in time.
 
 ```
 Shared/
+└── DomainModel/
+|   └── Services/
+|       └── EventStoreInterface.php            # Event Storage Interface
 └── Infrastructure/
-   └── EventStore
-       ├── EventStoreInterface.php               # Event Storage Interface               
+   └── EventStore           
        └── Repository/                            
-           └── OutboxEventRepository.php         # Event Storage Implementation
+           └── OutboxEventRepository.php       # Event Storage Implementation
 ```
 
 ## Usage
@@ -328,6 +330,7 @@ if ($spec->isSatisfiedBy($customer)) {
 ## Overview
 
 Our application implements robust transaction management following the ACID principles:
+
 - **Atomicity**: Transactions are fully completed or fully rolled back
 - **Consistency**: The database remains in a consistent state before and after transactions
 - **Isolation**: Transactions are isolated from the effects of other concurrent transactions

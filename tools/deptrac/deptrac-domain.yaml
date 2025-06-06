@@ -5,47 +5,146 @@ parameters:
     - '#.*test.*#'
     - '#vendor#'
   layers:
-    - name: OrderContextClasses
+    - name: OrderContextDomainModel
       collectors:
         - type: bool
           must:
             - type: directory
-              value: src/OrderContext/.*
-          must_not:
-            - type: interface
-              value: .*Interface$
-    - name: PaymentContextClasses
+              value: src/OrderContext/DomainModel/.*
+
+    - name: OrderContextApplication
       collectors:
         - type: bool
           must:
             - type: directory
-              value: src/PaymentContext/.*
-          must_not:
-            - type: interface
-              value: .*Interface$
-    - name: OrderContextInterfaces
+              value: src/OrderContext/Application/.*
+
+    - name: OrderContextInfrastructure
       collectors:
         - type: bool
           must:
             - type: directory
-              value: src/OrderContext/.*
-            - type: interface
-              value: .*Interface$
-    - name: PaymentContextInterfaces
+              value: src/OrderContext/Infrastructure/.*
+
+    - name: OrderContextPresentation
       collectors:
         - type: bool
           must:
             - type: directory
-              value: src/PaymentContext/.*
-            - type: interface
-              value: .*Interface$
+              value: src/OrderContext/Presentation/.*
+
+    - name: PaymentContextDomainModel
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/DomainModel/.*
+
+    - name: PaymentContextApplication
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/Application/.*
+
+    - name: PaymentContextInfrastructure
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/Infrastructure/.*
+
+    - name: PaymentContextPresentation
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/PaymentContext/Presentation/.*
+
+    - name: SharedDomainModel
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/Shared/DomainModel/.*
+
+    - name: SharedApplication
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/Shared/Application/.*
+
+    - name: SharedInfrastructure
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/Shared/Infrastructure/.*
+
+    - name: SharedPresentation
+      collectors:
+        - type: bool
+          must:
+            - type: directory
+              value: src/Shared/Presentation/.*
 
   ruleset:
-    OrderContextClasses:
-      - OrderContextInterfaces # Can use/implement own domain interfaces
-      - PaymentContextInterfaces  # Can use other domain interfaces
-    PaymentContextClasses:
-      - PaymentContextInterfaces  # Can use/implement own domain interfaces
-      - OrderContextInterfaces # Can use other domain interfaces
-    OrderContextInterfaces: ~
-    PaymentContextInterfaces: ~
+    OrderContextDomainModel:
+      - SharedDomainModel
+
+    OrderContextApplication:
+      - OrderContextDomainModel
+      - SharedDomainModel
+      - SharedApplication
+
+    OrderContextInfrastructure:
+      - OrderContextDomainModel
+      - OrderContextApplication
+      - SharedDomainModel
+      - SharedApplication
+      - SharedInfrastructure
+
+    OrderContextPresentation:
+      - OrderContextApplication
+      - OrderContextDomainModel
+      - SharedDomainModel
+      - SharedApplication
+      - SharedPresentation
+      
+    PaymentContextDomainModel:
+      - SharedDomainModel
+
+    PaymentContextApplication:
+      - PaymentContextDomainModel
+      - SharedDomainModel
+      - SharedApplication
+      - OrderContextDomainModel
+
+    PaymentContextInfrastructure:
+      - PaymentContextDomainModel
+      - PaymentContextApplication
+      - SharedDomainModel
+      - SharedApplication
+      - SharedInfrastructure
+
+    PaymentContextPresentation:
+      - PaymentContextApplication
+      - PaymentContextDomainModel
+      - SharedDomainModel
+      - SharedApplication
+      - SharedPresentation
+      
+    SharedDomainModel: ~
+    SharedApplication:
+      - SharedDomainModel
+    SharedInfrastructure:
+      - SharedDomainModel
+      - SharedApplication
+    SharedPresentation:
+      - SharedDomainModel
+      - SharedApplication
+      - SharedInfrastructure
+
+  skipViolations:
+    - message: "Shared\\Presentation\\Console\\Command\\ProcessOutboxEventsCommand must not depend on Shared\\Infrastructure\\Outbox\\Service\\OutboxEventProcessor"

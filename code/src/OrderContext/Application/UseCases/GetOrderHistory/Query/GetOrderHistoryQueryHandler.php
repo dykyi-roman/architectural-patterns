@@ -9,7 +9,7 @@ use OrderContext\Application\UseCases\GetOrderHistory\Dto\OrderHistoryDto;
 use OrderContext\Application\UseCases\GetOrderHistory\Exception\HistoryNotFoundException;
 use Shared\Application\Exception\ApplicationException;
 use Shared\DomainModel\Event\DomainEventInterface;
-use Shared\Infrastructure\EventStore\EventStoreInterface;
+use Shared\DomainModel\Service\EventStoreInterface;
 
 final readonly class GetOrderHistoryQueryHandler
 {
